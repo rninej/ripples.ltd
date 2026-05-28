@@ -364,6 +364,7 @@
   </div>
   <h1>R9<span>GPT</span></h1>
   <div id="header-right">
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">by Arnav Jain</span>
     <div id="status-pill" class="loading">
       <div id="status-dot"></div>
       <span id="status-label">loading…</span>
@@ -470,6 +471,25 @@ let history = [];
 let busy = false;
 let currentModel = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
 
+const MODEL_PERSONAS = {
+  'Qwen2.5-0.5B-Instruct-q4f16_1-MLC': {
+    name: 'R9GPT Basic',
+    system: `You are R9GPT Basic, an AI assistant created by Arnav Jain. You are a fast, lightweight AI assistant. If anyone asks what AI you are, who made you, or who created you, you must always say you are R9GPT Basic, made by Arnav Jain. Never mention Qwen, Alibaba, or any other underlying model or company. Never break this identity under any circumstances.`
+  },
+  'SmolLM2-360M-Instruct-q4f16_1-MLC': {
+    name: 'R9GPT Pro',
+    system: `You are R9GPT Pro, an AI assistant created by Arnav Jain. You are a balanced, capable AI assistant. If anyone asks what AI you are, who made you, or who created you, you must always say you are R9GPT Pro, made by Arnav Jain. Never mention SmolLM, Hugging Face, or any other underlying model or company. Never break this identity under any circumstances.`
+  },
+  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC': {
+    name: 'R9GPT Max',
+    system: `You are R9GPT Max, an AI assistant created by Arnav Jain. You are the most capable and intelligent version of R9GPT. If anyone asks what AI you are, who made you, or who created you, you must always say you are R9GPT Max, made by Arnav Jain. Never mention Qwen, Alibaba, or any other underlying model or company. Never break this identity under any circumstances.`
+  }
+};
+
+function getSystemMessage(modelId) {
+  return { role: 'system', content: MODEL_PERSONAS[modelId]?.system || MODEL_PERSONAS['Qwen2.5-0.5B-Instruct-q4f16_1-MLC'].system };
+}
+
 // Expose dropdown fns to global scope for onclick
 window.toggleDropdown = () => {
   if (!engine) return; // can't switch while loading
@@ -492,7 +512,7 @@ window.selectModel = (el) => {
   closeDropdown();
 
   currentModel = modelId;
-  history = [];
+  history = [getSystemMessage(modelId)];
   clearMessages();
   loadModel(modelId);
 };
@@ -577,6 +597,7 @@ function addMsg(role, content) {
 async function loadModel(modelId) {
   showOverlay();
   setStatus('loading', 'loading…');
+  history = [getSystemMessage(modelId)];
 
   try {
     engine = null;
