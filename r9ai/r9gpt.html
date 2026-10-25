@@ -24,6 +24,7 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
 
 .side { width: 250px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; padding: 14px; min-height: 0; }
+.side-top { display: flex; gap: 6px; }
 .side-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.55); padding: 0 4px; }
 .side-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
 .side-list::-webkit-scrollbar { width: 6px; }
@@ -41,7 +42,8 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn.primary { background: linear-gradient(135deg, rgba(56,189,248,.85), rgba(99,102,241,.85)); }
 .btn.danger { background: rgba(244,63,94,.6); }
-.btn.full { width: 100%; }
+.btn.grow { flex: 1; }
+.btn.icon { padding: .65rem .8rem; }
 .side-toggle { display: none; }
 
 .header { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -61,16 +63,26 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 #progress-fill { height: 100%; width: 0%; transition: width .3s; background: linear-gradient(90deg, #4ade80, #22c55e); }
 .hint { font-size: .74rem; color: rgba(255,255,255,.6); }
 
-.chat { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,.07); border: 1px solid var(--border); border-radius: 22px; overscroll-behavior: contain; }
+.chat { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,.07); border: 1px solid var(--border); border-radius: 22px; overscroll-behavior: contain; scroll-behavior: smooth; }
 .chat::-webkit-scrollbar { width: 8px; }
 .chat::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 8px; }
-.chat-empty { margin: auto; text-align: center; color: var(--muted); padding: 30px; }
+.chat-empty { margin: auto; text-align: center; color: var(--muted); padding: 30px; line-height: 1.6; }
 .msg { max-width: 86%; padding: 14px 18px; border-radius: 20px; line-height: 1.6; font-size: .96rem; overflow-wrap: anywhere; }
 .msg.user { align-self: flex-end; background: rgba(59,130,246,.5); border: 1px solid rgba(255,255,255,.3); border-bottom-right-radius: 6px; white-space: pre-wrap; }
 .msg.user img { max-width: 220px; border-radius: 12px; margin-top: 8px; display: block; }
 .msg.ai { align-self: flex-start; max-width: 92%; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-bottom-left-radius: 6px; }
-.answer { white-space: pre-wrap; }
+.answer strong { font-weight: 700; }
+.answer code { background: rgba(0,0,0,.25); padding: 1px 6px; border-radius: 6px; font-size: .88em; font-family: ui-monospace, Menlo, monospace; }
+.answer a { color: #bfdbfe; text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
 .segment + .segment { margin-top: 10px; }
+
+.actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.act { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: var(--muted); border-radius: 999px; padding: 4px 11px; font: inherit; font-size: .74rem; cursor: pointer; }
+.act:hover { background: rgba(255,255,255,.22); color: #fff; }
+.srcs { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; gap: 4px; }
+.srcs-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.55); }
+.src { font-size: .8rem; color: #bfdbfe; text-decoration: none; overflow-wrap: anywhere; }
+.src:hover { text-decoration: underline; }
 
 .pending { display: flex; align-items: center; gap: 12px; padding: 4px 2px; }
 .skel { display: flex; flex-direction: column; gap: 7px; width: 120px; }
@@ -120,6 +132,7 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 #send-btn { min-width: 88px; height: 48px; }
 #stop-btn { height: 48px; display: none; }
 #stop-btn.visible { display: inline-block; }
+.counter { font-size: .72rem; color: rgba(255,255,255,.5); padding: 0 4px; }
 
 .modal-overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; background: rgba(10,8,30,.5); }
 .modal-overlay.visible { display: flex; }
@@ -144,7 +157,10 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 
 <div class="layout">
   <aside class="side glass" id="side">
-    <button class="btn primary full" id="new-chat">＋ New chat</button>
+    <div class="side-top">
+      <button class="btn primary grow" id="new-chat" title="New chat (Ctrl/Cmd+K)">＋ New chat</button>
+      <button class="btn icon" id="export-chat" title="Export this chat as Markdown">⬇</button>
+    </div>
     <div class="side-title">Saved chats</div>
     <div class="side-list" id="side-list"></div>
   </aside>
@@ -152,7 +168,7 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
   <div class="main">
     <header class="header glass">
       <div class="title-row">
-        <button class="btn side-toggle" id="side-toggle" title="Chats">☰</button>
+        <button class="btn side-toggle icon" id="side-toggle" title="Chats">☰</button>
         <div class="title">🤖 WebLLM Chat</div>
         <div id="status">Starting…</div>
       </div>
@@ -164,11 +180,11 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
         <button class="btn danger" id="reset-btn">🔄 Reset</button>
       </div>
       <div class="toggles">
-        <div class="toggle active" id="toggle-tools">🧰 Tools</div>
-        <div class="toggle active" id="toggle-thinking">💭 Thinking</div>
+        <div class="toggle" id="toggle-tools">🧰 Tools &amp; search</div>
+        <div class="toggle" id="toggle-thinking">💭 Thinking</div>
       </div>
       <div class="progress" id="progress-bar"><div id="progress-fill"></div></div>
-      <div class="hint">Search: SearXNG, DuckDuckGo, Bing, Brave, Mojeek, Google, Wikipedia · The app opens the top pages and gives the model only the matching sentences · Vision: Phi-3.5-vision, Gemma-3</div>
+      <div class="hint">Search runs automatically for current facts. Sources are ranked by relevance, Wikipedia articles are read in full, and arithmetic goes to a calculator. Shortcuts: Enter sends, Shift+Enter adds a line, Esc stops, Ctrl/Cmd+K starts a new chat.</div>
     </header>
 
     <main class="chat" id="chat">
@@ -188,6 +204,7 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
         <button class="btn primary" id="send-btn" disabled>Send</button>
         <button class="btn danger" id="stop-btn">Stop</button>
       </div>
+      <div class="counter" id="counter"></div>
     </footer>
   </div>
 </div>
@@ -252,8 +269,23 @@ const cleanText = s => (s || '').replace(/\s+/g, ' ').trim();
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
 const todayStr = () => new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
 
+/* Safe markdown-lite: escape first, then add formatting */
+const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function md(text) {
+  return esc(text || '')
+    .replace(/^#{1,4} (.+)$/gm, '<strong>$1</strong>')
+    .replace(/^[-*] /gm, '• ')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/https?:\/\/[^\s<]+/g, u => {
+      const clean = u.replace(/[.,;:!?)\]]+$/, '');
+      return `<a href="${clean}" target="_blank" rel="noopener noreferrer">${clean}</a>${u.slice(clean.length)}`;
+    })
+    .replace(/\n/g, '<br>');
+}
+
 /* ============================================================
-   Network helpers. Direct request and CORS proxies run in parallel.
+   Network
    ============================================================ */
 const PROXIES = [
   u => `https://api.allorigins.win/raw?url=${enc(u)}`,
@@ -270,12 +302,12 @@ async function getJson(url, ms = 8000) {
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
+/* Direct request and proxies race in parallel; the first good answer wins */
 function getHtml(url, ms = 9000) {
   return Promise.any([url, ...PROXIES.map(p => p(url))].map(u => getText(u, ms)));
 }
 const parseHtml = html => new DOMParser().parseFromString(html, 'text/html');
 
-/* Search pages wrap results in redirect links. These turn them back into the real address. */
 function unwrapBing(href) {
   try {
     const u = new URL(href, 'https://www.bing.com');
@@ -297,9 +329,34 @@ function unwrapGoogle(href) {
 }
 
 /* ============================================================
-   Search sources, in fallback order
-   Each returns [{ title, url, snippet }]. A source counts as
-   good when it returns at least 3 results.
+   Keywords and relevance
+   ============================================================ */
+const STOP = new Set(('the a an of in on at to for and or is are was were be by with from what whats how who when where ' +
+  'which does do did its it this that top best me my i tell please give current currently latest now today right can you ' +
+  'about will much many could should would there their they he she ok okay hey hi thanks know want need look find').split(' '));
+
+function keywords(q) {
+  const words = q.toLowerCase().replace(/'s\b/g, '').replace(/[^a-z0-9%$.\s-]/g, ' ').split(/\s+/)
+    .map(w => w.replace(/^[.\-]+|[.\-]+$/g, ''))
+    .filter(w => w.length > 1 && !STOP.has(w) && !/^20\d\d$/.test(w));
+  return [...new Set(words)];
+}
+
+/* A result counts as relevant when it matches at least two keywords (or one, for one-word questions) */
+function rankResults(results, kws) {
+  const need = Math.min(2, kws.length);
+  return results
+    .map(r => {
+      const hay = `${r.title} ${r.snippet} ${r.url}`.toLowerCase();
+      return { ...r, hits: kws.filter(k => hay.includes(k)).length };
+    })
+    .filter(r => r.hits >= need)
+    .sort((a, b) => b.hits - a.hits);
+}
+
+/* ============================================================
+   Search sources, tried in order. A source is accepted when it
+   returns at least three relevant results.
    ============================================================ */
 const SEARX = ['https://searx.be', 'https://search.sapti.me', 'https://priv.au', 'https://searx.tiekoetter.com', 'https://search.bus-hit.me'];
 
@@ -371,7 +428,7 @@ const SOURCES = [
   {
     name: 'Wikipedia',
     run: async q => {
-      const d = await getJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${enc(q)}&format=json&origin=*&srlimit=6`);
+      const d = await getJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${enc(q)}&format=json&origin=*&srlimit=8`);
       return (d.query?.search || []).map(x => ({
         title: x.title,
         url: `https://en.wikipedia.org/wiki/${enc(x.title.replace(/ /g, '_'))}`,
@@ -390,16 +447,17 @@ function dedupe(results) {
   });
 }
 
-async function searchWeb(query, onStep = () => {}) {
+async function searchWeb(query, kws, onStep = () => {}) {
   const tried = [];
   let best = null;
   for (const src of SOURCES) {
     onStep(`trying ${src.name}…`);
     try {
-      const results = dedupe(await withTimeout(src.run(query), 12000));
-      tried.push(`${src.name} ${results.length}`);
-      if (results.length >= 3) return { source: src.name, results, tried };
-      if (results.length && (!best || results.length > best.results.length)) best = { source: src.name, results };
+      const raw = dedupe(await withTimeout(src.run(query), 9000));
+      const ranked = rankResults(raw, kws);
+      tried.push(`${src.name} ${ranked.length}/${raw.length}`);
+      if (ranked.length >= 3) return { source: src.name, results: ranked, tried };
+      if (ranked.length && (!best || ranked.length > best.results.length)) best = { source: src.name, results: ranked };
     } catch {
       tried.push(`${src.name} failed`);
     }
@@ -408,68 +466,127 @@ async function searchWeb(query, onStep = () => {}) {
 }
 
 /* ============================================================
-   Reading pages: the app opens the top results and keeps only
-   the sentences that match the question
+   Wikipedia: find the article for the subject, then read it in full
    ============================================================ */
-const STOP = new Set('the a an of in on at to for and or is are was were be by with from what whats how who when where which does do did its it this that top best me tell please give'.split(' '));
-function keywords(q) {
-  return q.toLowerCase().replace(/[^a-z0-9$%. ]/g, ' ').split(/\s+/)
-    .filter(w => w.length > 1 && !STOP.has(w) && !/^20\d\d$/.test(w));
-}
-async function readPage(url) {
-  const doc = parseHtml(await getHtml(url, 9000));
-  doc.querySelectorAll('script,style,nav,header,footer,aside,noscript,iframe,form,svg').forEach(e => e.remove());
-  doc.querySelectorAll('p,li,h1,h2,h3,h4,tr,div,br').forEach(e => e.before('\n'));
-  return (doc.body?.textContent || '').replace(/[ \t\u00a0]+/g, ' ');
-}
-function passages(text) {
-  return text.split(/\n+|(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length >= 40 && s.length <= 400);
-}
-function pickSentences(text, kws) {
-  const scored = passages(text).map(s => {
-    const low = s.toLowerCase();
-    let score = 0;
-    for (const k of kws) if (low.includes(k)) score += 2;
-    if (/\d/.test(s)) score += 1;
-    if (/billion|million|trillion|percent|%|\$|€|£/i.test(s)) score += 1;
-    return { s, score };
-  }).filter(x => x.score >= 2).sort((a, b) => b.score - a.score);
-  const seen = new Set(), out = [];
-  for (const x of scored) {
-    if (seen.has(x.s)) continue;
-    seen.add(x.s);
-    out.push(x.s);
-    if (out.length === 3) break;
-  }
-  return out;
-}
-async function gatherEvidence(query, results) {
-  const kws = keywords(query);
-  return Promise.all(results.slice(0, 3).map(async r => {
-    let excerpts = [];
-    try { excerpts = pickSentences(await withTimeout(readPage(r.url), 10000), kws); } catch {}
-    if (!excerpts.length && r.snippet) excerpts = [r.snippet];
-    return { ...r, excerpts };
-  }));
-}
-function formatEvidence(pages) {
-  return pages.map((p, i) => {
-    const lines = p.excerpts.length
-      ? p.excerpts.map(e => `- ${e.slice(0, 300)}`)
-      : ['- (no matching text found on this page)'];
-    return `[${i + 1}] ${p.title}\nURL: ${p.url}\n${lines.join('\n')}`;
-  }).join('\n\n');
+async function wikiArticle(kws) {
+  if (!kws.length) return null;
+  const d = await getJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${enc(kws.join(' '))}&srlimit=5&format=json&origin=*`);
+  const candidates = (d.query?.search || [])
+    .map(x => ({ title: x.title, tk: keywords(x.title) }))
+    .filter(x => x.tk.length && x.tk.every(k => kws.includes(k)))
+    .sort((a, b) => b.tk.length - a.tk.length);
+  if (!candidates.length) return null;
+  const title = candidates[0].title;
+  const ex = await getJson(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&redirects=1&format=json&origin=*&titles=${enc(title)}`);
+  const page = Object.values(ex.query?.pages || {})[0];
+  if (!page?.extract) return null;
+  return {
+    title: page.title,
+    url: `https://en.wikipedia.org/wiki/${enc(page.title.replace(/ /g, '_'))}`,
+    text: page.extract,
+  };
 }
 
-/* Full research step: search, open pages, return evidence and sources */
-async function research(query, box) {
-  const found = await searchWeb(query, s => box?.setTitle(s));
-  if (!found.results.length) {
-    return { evidence: `No search results were found. Sources tried: ${found.tried.join(', ')}.`, sources: [] };
+/* ============================================================
+   Reading pages: keep only sentences that match the question
+   ============================================================ */
+async function readPage(url) {
+  const doc = parseHtml(await getHtml(url, 9000));
+  doc.querySelectorAll('script,style,nav,header,footer,aside,noscript,iframe,form,svg,button').forEach(e => e.remove());
+  doc.querySelectorAll('p,li,h1,h2,h3,h4,tr,div,br,section,article').forEach(e => e.before('\n'));
+  return (doc.body?.textContent || '').replace(/[ \t\u00a0]+/g, ' ');
+}
+
+function passages(text) {
+  return text
+    .split(/\n+|(?<=[.!?])\s+(?=[A-Z0-9"'“(\[$])/)
+    .map(s => s.trim())
+    .filter(s => s.length >= 30 && s.length <= 500);
+}
+
+function scoreSentence(s, kws, bigrams, need) {
+  const low = s.toLowerCase();
+  let hits = 0;
+  for (const k of kws) if (low.includes(k)) hits++;
+  if (hits < need) return 0;
+  let sc = hits;
+  for (const b of bigrams) if (low.includes(b)) sc += 3;
+  if (/\d/.test(s)) sc += 1;
+  if (/billion|million|trillion|percent|%|\$|€|£/i.test(s)) sc += 2;
+  if (/\b20[12]\d\b/.test(s)) sc += 1;
+  return sc;
+}
+
+function pickSentences(text, kws, max = 4) {
+  const bigrams = [];
+  for (let i = 0; i < kws.length - 1; i++) bigrams.push(`${kws[i]} ${kws[i + 1]}`);
+  const need = Math.min(2, kws.length);
+  const seen = new Set();
+  return passages(text)
+    .map(s => ({ s, sc: scoreSentence(s, kws, bigrams, need) }))
+    .filter(x => x.sc > 0)
+    .sort((a, b) => b.sc - a.sc)
+    .filter(x => !seen.has(x.s) && seen.add(x.s))
+    .slice(0, max)
+    .map(x => x.s);
+}
+
+async function gatherPages(results, kws) {
+  return Promise.all(results.slice(0, 3).map(async r => {
+    let excerpts = [];
+    try { excerpts = pickSentences(await withTimeout(readPage(r.url), 10000), kws, 3); } catch {}
+    if (!excerpts.length && r.snippet) excerpts = [r.snippet];
+    return { title: r.title, url: r.url, excerpts };
+  }));
+}
+
+/* Full research step: article, then web pages. Returns evidence text and the sources used. */
+async function research(question, box) {
+  const kws = keywords(question);
+  const year = new Date().getFullYear();
+  const base = kws.join(' ') || question.trim();
+  const hasYear = /\b20\d\d\b/.test(question);
+  const primary = hasYear ? base : `${base} ${year}`;
+  const items = [];
+  const tried = [];
+
+  box?.setTitle('checking Wikipedia…');
+  try {
+    const wiki = await withTimeout(wikiArticle(kws), 12000);
+    if (wiki) {
+      const ex = pickSentences(wiki.text, kws, 4);
+      tried.push(`Wikipedia article ${ex.length} matches`);
+      if (ex.length) items.push({ title: `${wiki.title} (Wikipedia)`, url: wiki.url, excerpts: ex });
+    } else {
+      tried.push('Wikipedia article not found');
+    }
+  } catch { tried.push('Wikipedia article failed'); }
+
+  const queries = [...new Set([primary, base])].filter(Boolean);
+  for (const q of queries) {
+    if (items.length >= 3) break;
+    const found = await searchWeb(q, kws, s => box?.setTitle(s));
+    tried.push(...found.tried.map(t => `${t} (${q})`));
+    if (!found.results.length) continue;
+    box?.setTitle(`reading ${found.results.length} pages from ${found.source}…`);
+    const pages = await gatherPages(found.results, kws);
+    for (const p of pages) if (p.excerpts.length) items.push(p);
   }
-  box?.setTitle(`reading pages from ${found.source}…`);
-  const sources = await gatherEvidence(query, found.results);
-  return { evidence: formatEvidence(sources), sources };
+
+  const unique = items
+    .filter((x, i, a) => a.findIndex(y => y.url === x.url) === i)
+    .slice(0, 5);
+
+  if (!unique.length) {
+    return {
+      evidence: `No matching information was found. Searched for "${primary}". Checked: ${tried.join('; ')}.`,
+      sources: [],
+    };
+  }
+  const body = unique
+    .map((p, i) => `[${i + 1}] ${p.title}\nURL: ${p.url}\n${p.excerpts.map(e => `- ${e.slice(0, 400)}`).join('\n')}`)
+    .join('\n\n');
+  return { evidence: `Searched on ${todayStr()}.\n\n${body}`, sources: unique };
 }
 
 /* ============================================================
@@ -514,7 +631,7 @@ function calculate(raw) {
   try {
     const value = Function(`"use strict"; return (${expr});`)();
     if (typeof value !== 'number' || !isFinite(value)) return 'The result is not a finite number.';
-    return `${raw} = ${Number(value.toPrecision(12))}`;
+    return `${raw.trim()} = ${Number(value.toPrecision(12))}`;
   } catch {
     return 'Could not evaluate that expression.';
   }
@@ -531,7 +648,7 @@ function currentTime(timezone) {
   }
 }
 
-/* Tool calls the model writes itself, e.g. <tool_call>web_search{"query": "..."}</tool_call> */
+/* Tool calls the model writes itself */
 function normalizeCall(name, args) {
   const param = TOOL_PARAM[name];
   if (!param) return null;
@@ -575,6 +692,7 @@ function extractToolCalls(text) {
   }
   return { calls, cleaned: cleaned.trim() };
 }
+
 async function runTool(call, onStep) {
   switch (call.name) {
     case 'web_search': return (await research(call.args.query, { setTitle: onStep })).evidence;
@@ -589,19 +707,8 @@ async function runTool(call, onStep) {
 /* ============================================================
    Routing: decided in code, not by the model
    ============================================================ */
-const FRESH_RE = /\b(current|currently|latest|today|tonight|tomorrow|right now|recent|recently|newest|this (?:week|month|year)|price|prices|net worth|worth|salary|income|news|headlines|score|scores|weather|forecast|stock|shares|exchange rate|who is the|who's the|who runs|ceo|president|prime minister|chancellor|election|released|release date|just announced|as of|last (?:week|month|year)|still|now|best|top\s*\d+|top ten|ranking|rankings|rank|list of|compare|versus|vs|202\d|203\d)\b/i;
+const FRESH_RE = /\b(current|currently|latest|today|tonight|tomorrow|right now|recent|recently|newest|this (?:week|month|year)|price|prices|net worth|worth|salary|income|news|headlines|score|scores|weather|forecast|stock|shares|exchange rate|who is the|who's the|who runs|ceo|president|prime minister|chancellor|election|released|release date|just announced|as of|last (?:week|month|year)|still|now|best|top\s*\d+|top ten|ranking|rankings|rank|list of|compare|versus|vs|how many|how much|population|cost|founded|born|died|202\d|203\d)\b/i;
 const needsFreshInfo = text => FRESH_RE.test(text);
-
-function buildSearchQuery(text) {
-  const year = new Date().getFullYear();
-  const cleaned = text
-    .replace(/[?!.]+/g, ' ')
-    .replace(/\b(what|whats|what's|is|are|the|a|an|tell me|me|please|how much|how many|do you know|can you|give me)\b/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const q = cleaned.length > 3 ? cleaned : text;
-  return /\b20\d\d\b/.test(q) ? q : `${q} ${year}`;
-}
 
 function quickMath(text) {
   const pct = text.match(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)/i);
@@ -616,25 +723,39 @@ function quickMath(text) {
    ============================================================ */
 const $ = id => document.getElementById(id);
 const statusEl = $('status'), progressBar = $('progress-bar'), progressFill = $('progress-fill');
-const chat = $('chat'), chatEmpty = $('chat-empty');
+const chat = $('chat'), chatEmpty = $('chat-empty'), counter = $('counter');
 const userInput = $('user-input'), sendBtn = $('send-btn'), stopBtn = $('stop-btn');
 const resetBtn = $('reset-btn'), modelInput = $('model-input'), loadBtn = $('load-btn');
 const toggleTools = $('toggle-tools'), toggleThinking = $('toggle-thinking');
 const fileInput = $('file-input'), fileBtn = $('file-btn');
 const attachChip = $('attach-chip'), attachThumb = $('attach-thumb'), attachName = $('attach-name'), attachClear = $('attach-clear');
 const resetModal = $('reset-modal'), cancelReset = $('cancel-reset'), confirmReset = $('confirm-reset');
-const sideEl = $('side'), sideList = $('side-list'), newChatBtn = $('new-chat'), sideToggle = $('side-toggle');
+const sideEl = $('side'), sideList = $('side-list'), newChatBtn = $('new-chat'), sideToggle = $('side-toggle'), exportBtn = $('export-chat');
 
 const STORE_KEY = 'webllm-chats-v2';
 const MODEL_KEY = 'webllm-model-v2';
+const PREF_KEY = 'webllm-prefs-v1';
 const MAX_HISTORY = 12;
-const THINK_LIMIT = 900;    // characters of reasoning before the app stops it and asks for a direct answer
+const THINK_LIMIT = 900;
 
 let engine = null, currentModel = null, worker = null;
 let loading = false, isGenerating = false, stopRequested = false;
-let toolsEnabled = true, thinkingEnabled = true;
+let implicitThink = false;
 let pendingImage = null;
-let implicitThink = false;  // Qwen3 starts reasoning without an opening <think> tag
+
+const prefs = (() => {
+  try { return { tools: true, thinking: true, ...JSON.parse(localStorage.getItem(PREF_KEY) || '{}') }; }
+  catch { return { tools: true, thinking: true }; }
+})();
+let toolsEnabled = prefs.tools;
+let thinkingEnabled = prefs.thinking;
+function savePrefs() {
+  try { localStorage.setItem(PREF_KEY, JSON.stringify({ tools: toolsEnabled, thinking: thinkingEnabled })); } catch {}
+}
+function paintToggles() {
+  toggleTools.classList.toggle('active', toolsEnabled);
+  toggleThinking.classList.toggle('active', thinkingEnabled);
+}
 
 /* ============================================================
    Engine: worker first (keeps the page responsive), main thread as fallback
@@ -666,7 +787,7 @@ async function checkWebGPU() {
 }
 
 /* ============================================================
-   Thinking: split the raw output into thinking and answer
+   Thinking: split raw output into reasoning and answer
    ============================================================ */
 function splitRaw(raw) {
   let thinkText = null, thinkClosed = false, visible = raw;
@@ -702,7 +823,7 @@ function persist() {
   catch { setStatus('⚠️ Could not save chats (storage full?)'); }
 }
 function chatTitle(c) {
-  const first = c.convo.find(m => m.role === 'user' && !textOf(m).startsWith(TOOL_PREFIX));
+  const first = c.convo.find(m => m.role === 'user');
   const t = first ? textOf(first).trim() : '';
   return t.length > 38 ? t.slice(0, 38) + '…' : (t || 'New chat');
 }
@@ -766,22 +887,34 @@ function renderChat() {
   chat.querySelectorAll('.msg, .error').forEach(el => el.remove());
   const convo = active?.convo ?? [];
   chatEmpty.style.display = convo.length ? 'none' : '';
-  for (const m of convo) {
-    const text = textOf(m);
-    if (m.role === 'user') addUserMessage(text, imageOf(m));
-    else if (m.role === 'assistant') addStaticAi(text);
-  }
+  const lastIdx = convo.length - 1;
+  convo.forEach((m, i) => {
+    if (m.role === 'user') addUserMessage(textOf(m), imageOf(m));
+    else if (m.role === 'assistant') addAnswer(textOf(m), i === lastIdx);
+  });
   chat.scrollTop = chat.scrollHeight;
+}
+function exportChat() {
+  if (!active?.convo.length) { setStatus('Nothing to export yet.'); return; }
+  const body = active.convo.map(m => `**${m.role === 'user' ? 'You' : 'Assistant'}:** ${textOf(m)}`).join('\n\n');
+  const blob = new Blob([`# ${chatTitle(active)}\n\n${body}\n`], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `chat-${new Date().toISOString().slice(0, 10)}.md`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 sideToggle.onclick = () => sideEl.classList.toggle('open');
 newChatBtn.onclick = newChat;
+exportBtn.onclick = exportChat;
 
 /* ============================================================
    UI helpers
    ============================================================ */
 function setStatus(text) { statusEl.textContent = text; }
 function scrollToBottom() { chat.scrollTop = chat.scrollHeight; }
-function scrollIfNearBottom() { if (chat.scrollHeight - chat.scrollTop - chat.clientHeight < 140) chat.scrollTop = chat.scrollHeight; }
+function scrollIfNearBottom() { if (chat.scrollHeight - chat.scrollTop - chat.clientHeight < 160) chat.scrollTop = chat.scrollHeight; }
 function hideEmpty() { chatEmpty.style.display = 'none'; }
 function updateButtons() {
   sendBtn.style.display = isGenerating ? 'none' : '';
@@ -789,7 +922,11 @@ function updateButtons() {
   sendBtn.disabled = isGenerating || !engine;
 }
 function setInputEnabled(on) { userInput.disabled = !on; updateButtons(); }
-function autoResize() { userInput.style.height = 'auto'; userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px'; }
+function autoResize() {
+  userInput.style.height = 'auto';
+  userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px';
+  counter.textContent = userInput.value.length > 500 ? `${userInput.value.length} characters` : '';
+}
 function clearAttachment() {
   pendingImage = null;
   fileInput.value = '';
@@ -800,11 +937,15 @@ function clearAttachment() {
 /* ============================================================
    Toggles, attachments, stop, reset
    ============================================================ */
-toggleTools.onclick = () => { toolsEnabled = !toolsEnabled; toggleTools.classList.toggle('active', toolsEnabled); };
-toggleThinking.onclick = () => { thinkingEnabled = !thinkingEnabled; toggleThinking.classList.toggle('active', thinkingEnabled); };
+toggleTools.onclick = () => { toolsEnabled = !toolsEnabled; paintToggles(); savePrefs(); };
+toggleThinking.onclick = () => { thinkingEnabled = !thinkingEnabled; paintToggles(); savePrefs(); };
+paintToggles();
 
 fileBtn.onclick = () => {
-  if (!currentModel || !isVisionModel(currentModel)) { alert('Images only work with vision models (Phi-3.5-vision, Gemma-3).'); return; }
+  if (!currentModel || !isVisionModel(currentModel)) {
+    setStatus('Images need a vision model such as Phi-3.5-vision or Gemma-3.');
+    return;
+  }
   fileInput.click();
 };
 fileInput.onchange = () => {
@@ -846,8 +987,19 @@ confirmReset.onclick = async () => {
 };
 
 userInput.addEventListener('input', autoResize);
-userInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+userInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendMessage(); }
+});
 sendBtn.onclick = sendMessage;
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (resetModal.classList.contains('visible')) resetModal.classList.remove('visible');
+    else if (isGenerating) stopBtn.click();
+    sideEl.classList.remove('open');
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); newChat(); }
+});
 
 /* ============================================================
    Model loading: retries, fallback to the default model, clear errors
@@ -897,7 +1049,8 @@ async function loadModel({ auto = false, modelId = null } = {}) {
     setInputEnabled(true);
     userInput.focus();
     if (!active.convo.length) {
-      addStaticAi(`Hi! I'm ${id}.${isVisionModel(id) ? ' You can attach an image 📎.' : ''} What can I help with?`);
+      addAnswer(`Hi! I'm ${id}.${isVisionModel(id) ? ' You can attach an image 📎.' : ''} What can I help with?`, false);
+      hideEmpty();
     }
   } catch (err) {
     progressBar.style.display = 'none';
@@ -928,17 +1081,41 @@ function addUserMessage(text, image) {
   chat.appendChild(el);
   scrollToBottom();
 }
-function addStaticAi(text) {
+
+function mkBtn(label, fn, extra = '') {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'act ' + extra;
+  b.textContent = label;
+  b.onclick = fn;
+  return b;
+}
+function actionBar(text, isLast) {
+  const bar = document.createElement('div');
+  bar.className = 'actions';
+  const copy = mkBtn('Copy', async () => {
+    try { await navigator.clipboard.writeText(text); copy.textContent = 'Copied ✓'; }
+    catch { copy.textContent = 'Copy failed'; }
+    setTimeout(() => { copy.textContent = 'Copy'; }, 1400);
+  });
+  bar.appendChild(copy);
+  if (isLast) bar.appendChild(mkBtn('↻ Regenerate', regenerate, 'regen'));
+  return bar;
+}
+
+function addAnswer(text, isLast) {
   hideEmpty();
   const wrap = document.createElement('div');
   wrap.className = 'msg ai';
   const a = document.createElement('div');
   a.className = 'answer';
-  a.textContent = extractToolCalls(text).cleaned || text;
-  wrap.appendChild(a);
+  a.innerHTML = md(extractToolCalls(text).cleaned || text);
+  wrap.append(a, actionBar(text, isLast));
   chat.appendChild(wrap);
   scrollToBottom();
+  return wrap;
 }
+
 function addAiWrapper() {
   hideEmpty();
   const wrap = document.createElement('div');
@@ -946,6 +1123,28 @@ function addAiWrapper() {
   chat.appendChild(wrap);
   scrollToBottom();
   return wrap;
+}
+
+/* Keep Regenerate only on the newest answer */
+function moveRegenerate(wrapper, text) {
+  chat.querySelectorAll('.regen').forEach(b => b.remove());
+  let bar = wrapper.querySelector('.actions');
+  if (!bar) { bar = document.createElement('div'); bar.className = 'actions'; wrapper.appendChild(bar); }
+  bar.replaceWith(actionBar(text, true));
+}
+
+function regenerate() {
+  if (isGenerating || !engine || !active) return;
+  const convo = active.convo;
+  if (convo.at(-1)?.role !== 'assistant') return;
+  convo.pop();
+  const lastUser = convo.pop();
+  if (!lastUser) return;
+  saveActive();
+  renderChat();
+  userInput.value = textOf(lastUser);
+  autoResize();
+  sendMessage();
 }
 
 /* A segment is one model output. Its loader shows immediately and is removed on the first token. */
@@ -1015,7 +1214,7 @@ function renderSegment(seg, raw, streaming) {
   const text = displayText(raw, streaming);
   if (text) {
     if (!seg.body) { seg.body = document.createElement('div'); seg.body.className = 'answer'; seg.el.appendChild(seg.body); }
-    seg.body.textContent = text;
+    seg.body.innerHTML = md(text);
   }
 }
 function finalizeSegment(seg, raw) {
@@ -1056,6 +1255,26 @@ function addToolBox(wrapper, call) {
     }
   };
 }
+
+function sourcesBlock(sources) {
+  const box = document.createElement('div');
+  box.className = 'srcs';
+  const t = document.createElement('div');
+  t.className = 'srcs-title';
+  t.textContent = 'Sources';
+  box.appendChild(t);
+  sources.forEach((s, i) => {
+    const a = document.createElement('a');
+    a.href = s.url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.className = 'src';
+    a.textContent = `[${i + 1}] ${s.title}`;
+    box.appendChild(a);
+  });
+  return box;
+}
+
 function addError(wrapper, message) {
   const el = document.createElement('div');
   el.className = 'error';
@@ -1068,12 +1287,14 @@ function addError(wrapper, message) {
    Prompts
    ============================================================ */
 function buildSystemPrompt(forceAnswer) {
-  let p = `You are a helpful assistant. Today is ${todayStr()}.`;
+  let p = `You are a helpful, accurate assistant. Today is ${todayStr()}. ` +
+    `Answer clearly and concisely. Say when you are not sure.`;
   if (toolsEnabled) {
     p += `
 
-You can search the web with: <tool_call>web_search{"query": "short search terms"}</tool_call>
-Use it only for current or uncertain facts. Answer simple things you know well directly.`;
+You can search the web by replying with ONLY this line:
+<tool_call>web_search{"query": "short search terms"}</tool_call>
+Use it for anything current or uncertain: prices, net worth, news, rankings, who holds a role, recent events. Do not use it for things you know well.`;
   }
   if (forceAnswer) p += `\n\nGive the final answer now. Be brief. Do not reason at length.`;
   return p;
@@ -1090,13 +1311,16 @@ function buildMessages(forceAnswer = false) {
   return msgs;
 }
 
-/* Answer step: the model only sees the evidence the app collected */
 function answerMessages(question, evidence) {
-  const sys = `Today is ${todayStr()}. Answer the question using ONLY the evidence below. ` +
-    `Reply in at most four short sentences, or a short numbered list when the question asks for a list. ` +
-    `Cite sources as [1], [2]. If the question asks for more items than the evidence contains, say how many you found. ` +
-    `If the evidence does not answer the question, say you could not confirm it from the search results. ` +
-    `Do not use outside knowledge and do not guess. Do not show your reasoning.`;
+  const sys = [
+    `Today is ${todayStr()}.`,
+    'You answer using ONLY the numbered evidence below. Never use outside knowledge.',
+    'Start with the direct answer (the number, name or fact asked for), then add one or two short sentences of detail.',
+    'Cite the evidence you used like [1] or [2]. If the evidence gives a date, mention it.',
+    'If the user asks for a list, list only items that appear in the evidence and say how many you found.',
+    'If the evidence does not contain the answer, say: "I could not confirm this from the sources I checked," then suggest one specific thing to check.',
+    'Do not show your reasoning. Keep the answer under 120 words.',
+  ].join(' ');
   let user = `Question: ${question}\n\nEvidence:\n${evidence}`;
   if (isQwen3(currentModel)) user += '\n\n/no_think';
   return [{ role: 'system', content: sys }, { role: 'user', content: user }];
@@ -1104,8 +1328,6 @@ function answerMessages(question, evidence) {
 
 /* ============================================================
    Generation
-   mode 'chat': normal reply, may include thinking, guarded against endless reasoning
-   mode 'answer': short answer from evidence, thinking off
    ============================================================ */
 async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048 } = {}) {
   const guard = mode === 'chat' && thinkingEnabled;
@@ -1131,7 +1353,7 @@ async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048 } = {
 
   await pump(messages, maxTokens, guard);
 
-  // The model is stuck reasoning: stop it and ask again for a direct answer
+  // Reasoning ran too long: stop it and ask again for a direct answer
   if (cut && !stopRequested) {
     try { engine.interruptGenerate(); } catch {}
     await sleep(80);
@@ -1149,28 +1371,25 @@ async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048 } = {
   return raw;
 }
 
-/* Writes the final answer, followed by the real source links */
 async function answerStream(seg, question, evidence, sources) {
-  const raw = await streamOnce(seg, answerMessages(question, evidence), { mode: 'answer', maxTokens: 400 });
+  const raw = await streamOnce(seg, answerMessages(question, evidence), { mode: 'answer', maxTokens: 450 });
   implicitThink = false;
   removePending(seg);
-  let answer = splitRaw(raw).visible.trim();
+  let answer = splitRaw(raw).visible.replace(/<tool_call>[\s\S]*?<\/tool_call>/g, '').trim();
   if (!answer) {
     answer = sources.length
-      ? 'I could not form a clear answer from these results. Check the sources below.'
-      : 'I could not find this in the search results.';
+      ? 'I could not confirm this from the sources I checked.'
+      : 'I could not find this on the web or Wikipedia right now. Try rephrasing, or check the source directly.';
   }
-  const src = sources.length
-    ? `\n\nSources:\n${sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join('\n')}`
-    : '';
   seg.el.innerHTML = '';
   const body = document.createElement('div');
   body.className = 'answer';
-  body.textContent = answer + src;
+  body.innerHTML = md(answer);
   seg.el.appendChild(body);
-  seg.body = body;
-  scrollToBottom();
-  return answer + src;
+  if (sources.length) seg.el.appendChild(sourcesBlock(sources));
+  return sources.length
+    ? `${answer}\n\nSources:\n${sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join('\n')}`
+    : answer;
 }
 
 /* ============================================================
@@ -1205,7 +1424,6 @@ async function sendMessage() {
     const fresh = !math && toolsEnabled && text && !image && needsFreshInfo(text);
 
     if (math || fresh) {
-      // Code decides: arithmetic goes to the calculator, current facts go to search
       seg.el.remove();
       let evidence, sources = [];
       if (math) {
@@ -1213,9 +1431,8 @@ async function sendMessage() {
         evidence = calculate(math);
         box.setResult(evidence);
       } else {
-        const query = buildSearchQuery(text);
-        const box = addToolBox(wrapper, { name: 'web_search', args: { query } });
-        const r = await research(query, box);
+        const box = addToolBox(wrapper, { name: 'web_search', args: { query: text } });
+        const r = await research(text, box);
         evidence = r.evidence;
         sources = r.sources;
         box.setResult(evidence);
@@ -1224,7 +1441,6 @@ async function sendMessage() {
       seg = createSegment(wrapper, 'Writing answer');
       finalText = await answerStream(seg, prompt, evidence, sources);
     } else {
-      // Normal chat. The model may still ask for a tool itself.
       const raw = await streamOnce(seg, buildMessages(false), { mode: 'chat' });
       const visible = splitRaw(raw).visible.trim();
       const { calls, cleaned } = extractToolCalls(visible);
@@ -1233,10 +1449,10 @@ async function sendMessage() {
 
       if (!toolsEnabled || !calls.length || stopRequested) {
         finalText = cleaned || visible || '…';
-        if (!seg.body && !seg.think) {
+        if (!seg.el.isConnected) {
           const body = document.createElement('div');
           body.className = 'answer';
-          body.textContent = finalText;
+          body.innerHTML = md(finalText);
           wrapper.appendChild(body);
         }
       } else {
@@ -1256,9 +1472,15 @@ async function sendMessage() {
         finalText = await answerStream(seg, prompt, evidence, sources);
       }
     }
-    active.convo.push({ role: 'assistant', content: finalText || '…' });
+    if (!finalText) finalText = '…';
+    active.convo.push({ role: 'assistant', content: finalText });
+    moveRegenerate(wrapper, finalText);
   } catch (err) {
     if (err.message !== 'Stopped') addError(wrapper, err.message || String(err));
+    else if (finalText) {
+      active.convo.push({ role: 'assistant', content: finalText });
+      moveRegenerate(wrapper, finalText);
+    }
   } finally {
     removePending(seg);
     if (!wrapper.children.length) wrapper.remove();
