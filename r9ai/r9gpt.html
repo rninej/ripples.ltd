@@ -168,7 +168,7 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
         <div class="toggle active" id="toggle-thinking">💭 Thinking</div>
       </div>
       <div class="progress" id="progress-bar"><div id="progress-fill"></div></div>
-      <div class="hint">Search: SearXNG, DuckDuckGo, Bing, Mojeek, Google, then Wikipedia as fallbacks · Calculator runs in code · Vision: Phi-3.5-vision, Gemma-3</div>
+      <div class="hint">Search: SearXNG, DuckDuckGo, Bing, Brave, Mojeek, Google, Wikipedia · The app opens the top pages and gives the model only the matching sentences · Vision: Phi-3.5-vision, Gemma-3</div>
     </header>
 
     <main class="chat" id="chat">
@@ -207,7 +207,7 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 import { CreateMLCEngine, CreateWebWorkerMLCEngine, prebuiltAppConfig } from "https://esm.run/@mlc-ai/web-llm";
 
 /* ============================================================
-   Model resolution
+   Basics
    ============================================================ */
 const DEFAULT_MODEL = 'Qwen3-0.6B-q4f16_1-MLC';
 const MODEL_ALIASES = {
@@ -250,48 +250,43 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const enc = encodeURIComponent;
 const cleanText = s => (s || '').replace(/\s+/g, ' ').trim();
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+const todayStr = () => new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
 
 /* ============================================================
-   Web search with a fallback chain
-   Each source is tried in order. The first one that returns
-   at least 3 results wins. If none reach 3, the one with the
-   most results is used. Failed sources are skipped.
+   Network helpers. Direct request and CORS proxies run in parallel.
    ============================================================ */
-const SEARX_INSTANCES = [
-  'https://searx.be',
-  'https://search.sapti.me',
-  'https://priv.au',
-  'https://searx.tiekoetter.com',
-  'https://search.bus-hit.me',
-];
-
-const CORS_PROXIES = [
+const PROXIES = [
   u => `https://api.allorigins.win/raw?url=${enc(u)}`,
   u => `https://corsproxy.io/?${enc(u)}`,
   u => `https://api.codetabs.com/v1/proxy/?quest=${enc(u)}`,
 ];
-
-async function fetchText(url, timeout = 8000) {
-  const r = await fetch(url, { signal: AbortSignal.timeout(timeout) });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+async function getText(url, ms = 8000) {
+  const r = await fetch(url, { signal: AbortSignal.timeout(ms) });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.text();
 }
-async function fetchJson(url, timeout = 8000) {
-  const r = await fetch(url, { signal: AbortSignal.timeout(timeout), headers: { Accept: 'application/json' } });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+async function getJson(url, ms = 8000) {
+  const r = await fetch(url, { signal: AbortSignal.timeout(ms), headers: { Accept: 'application/json' } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
-/* Direct first (fast when allowed), then public CORS proxies for HTML search pages */
-async function fetchAnyText(url, timeout = 9000) {
-  try { return await fetchText(url, timeout); } catch {}
-  let lastErr = new Error('blocked');
-  for (const make of CORS_PROXIES) {
-    try { return await fetchText(make(url), timeout); } catch (e) { lastErr = e; }
-  }
-  throw lastErr;
+function getHtml(url, ms = 9000) {
+  return Promise.any([url, ...PROXIES.map(p => p(url))].map(u => getText(u, ms)));
 }
 const parseHtml = html => new DOMParser().parseFromString(html, 'text/html');
 
+/* Search pages wrap results in redirect links. These turn them back into the real address. */
+function unwrapBing(href) {
+  try {
+    const u = new URL(href, 'https://www.bing.com');
+    if (!u.hostname.endsWith('bing.com') || !u.pathname.startsWith('/ck/')) return href;
+    let b = u.searchParams.get('u') || '';
+    if (b.startsWith('a1')) b = b.slice(2);
+    b = b.replace(/-/g, '+').replace(/_/g, '/');
+    while (b.length % 4) b += '=';
+    return decodeURIComponent(escape(atob(b)));
+  } catch { return href; }
+}
 function unwrapDdg(href) {
   try { const u = new URL(href, 'https://duckduckgo.com'); return u.searchParams.get('uddg') || u.href; }
   catch { return href; }
@@ -301,127 +296,180 @@ function unwrapGoogle(href) {
   catch { return href; }
 }
 
+/* ============================================================
+   Search sources, in fallback order
+   Each returns [{ title, url, snippet }]. A source counts as
+   good when it returns at least 3 results.
+   ============================================================ */
+const SEARX = ['https://searx.be', 'https://search.sapti.me', 'https://priv.au', 'https://searx.tiekoetter.com', 'https://search.bus-hit.me'];
+
 const SOURCES = [
   {
     name: 'SearXNG',
-    run: async q => {
-      for (const base of SEARX_INSTANCES) {
-        try {
-          const d = await fetchJson(`${base}/search?q=${enc(q)}&format=json&language=en`);
-          const r = (d.results || []).map(x => ({ title: x.title, url: x.url, snippet: cleanText(x.content) }));
-          if (r.length) return r;
-        } catch {}
-      }
-      return [];
-    }
+    run: q => Promise.any(SEARX.map(async base => {
+      const d = await getJson(`${base}/search?q=${enc(q)}&format=json&language=en`);
+      const r = (d.results || []).map(x => ({ title: cleanText(x.title), url: x.url, snippet: cleanText(x.content) }));
+      if (!r.length) throw new Error('empty');
+      return r;
+    })).catch(() => []),
   },
   {
     name: 'DuckDuckGo',
     run: async q => {
-      const doc = parseHtml(await fetchAnyText(`https://html.duckduckgo.com/html/?q=${enc(q)}`));
+      const doc = parseHtml(await getHtml(`https://html.duckduckgo.com/html/?q=${enc(q)}`));
       return [...doc.querySelectorAll('.result')].map(el => {
         const a = el.querySelector('.result__a');
         if (!a) return null;
         return { title: cleanText(a.textContent), url: unwrapDdg(a.getAttribute('href') || ''), snippet: cleanText(el.querySelector('.result__snippet')?.textContent) };
       }).filter(Boolean);
-    }
+    },
   },
   {
     name: 'Bing',
     run: async q => {
-      const doc = parseHtml(await fetchAnyText(`https://www.bing.com/search?q=${enc(q)}&setlang=en`));
+      const doc = parseHtml(await getHtml(`https://www.bing.com/search?q=${enc(q)}&setlang=en`));
       return [...doc.querySelectorAll('li.b_algo')].map(el => {
         const a = el.querySelector('h2 a');
         if (!a) return null;
-        return { title: cleanText(a.textContent), url: a.getAttribute('href') || '', snippet: cleanText(el.querySelector('.b_caption p, p')?.textContent) };
+        return { title: cleanText(a.textContent), url: unwrapBing(a.getAttribute('href') || ''), snippet: cleanText(el.querySelector('.b_caption p, p')?.textContent) };
       }).filter(Boolean);
-    }
+    },
+  },
+  {
+    name: 'Brave',
+    run: async q => {
+      const doc = parseHtml(await getHtml(`https://search.brave.com/search?q=${enc(q)}&source=web`));
+      return [...doc.querySelectorAll('div.snippet')].map(el => {
+        const a = el.querySelector('a[href^="http"]');
+        if (!a) return null;
+        return { title: cleanText(el.querySelector('.title')?.textContent || a.textContent), url: a.getAttribute('href'), snippet: cleanText(el.querySelector('.snippet-description, .content')?.textContent) };
+      }).filter(Boolean);
+    },
   },
   {
     name: 'Mojeek',
     run: async q => {
-      const doc = parseHtml(await fetchAnyText(`https://www.mojeek.com/search?q=${enc(q)}`));
+      const doc = parseHtml(await getHtml(`https://www.mojeek.com/search?q=${enc(q)}`));
       return [...doc.querySelectorAll('ul.results-standard li')].map(el => {
         const a = el.querySelector('h2 a');
         if (!a) return null;
         return { title: cleanText(a.textContent), url: a.getAttribute('href') || '', snippet: cleanText(el.querySelector('p.s, p')?.textContent) };
       }).filter(Boolean);
-    }
+    },
   },
   {
     name: 'Google',
     run: async q => {
-      const doc = parseHtml(await fetchAnyText(`https://www.google.com/search?q=${enc(q)}&hl=en`));
+      const doc = parseHtml(await getHtml(`https://www.google.com/search?q=${enc(q)}&hl=en`));
       return [...doc.querySelectorAll('h3')].map(h => {
         const a = h.closest('a');
         if (!a) return null;
-        const container = h.closest('div.g, div[data-hveid]');
-        const snippet = cleanText(container?.textContent || '').replace(cleanText(h.textContent), '').slice(0, 300);
-        return { title: cleanText(h.textContent), url: unwrapGoogle(a.getAttribute('href') || ''), snippet };
+        return { title: cleanText(h.textContent), url: unwrapGoogle(a.getAttribute('href') || ''), snippet: '' };
       }).filter(Boolean);
-    }
-  },
-  {
-    name: 'DuckDuckGo Instant',
-    run: async q => {
-      const d = await fetchJson(`https://api.duckduckgo.com/?q=${enc(q)}&format=json&no_html=1&skip_disambig=1`);
-      const out = [];
-      if (d.AbstractText) out.push({ title: d.Heading || q, url: d.AbstractURL || '', snippet: cleanText(d.AbstractText) });
-      for (const t of d.RelatedTopics || []) {
-        const items = t.Topics ? t.Topics : [t];
-        for (const it of items) if (it.Text && it.FirstURL) out.push({ title: it.Text.slice(0, 90), url: it.FirstURL, snippet: it.Text });
-      }
-      return out;
-    }
+    },
   },
   {
     name: 'Wikipedia',
     run: async q => {
-      const d = await fetchJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${enc(q)}&format=json&origin=*&srlimit=6`);
+      const d = await getJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${enc(q)}&format=json&origin=*&srlimit=6`);
       return (d.query?.search || []).map(x => ({
         title: x.title,
         url: `https://en.wikipedia.org/wiki/${enc(x.title.replace(/ /g, '_'))}`,
-        snippet: cleanText(x.snippet.replace(/<[^>]*>/g, ''))
+        snippet: cleanText(x.snippet.replace(/<[^>]*>/g, '')),
       }));
-    }
+    },
   },
 ];
 
 function dedupe(results) {
   const seen = new Set();
   return results.filter(r => {
-    if (!r.url || !r.title || seen.has(r.url)) return false;
+    if (!r.url || !r.title || !/^https?:\/\//i.test(r.url) || seen.has(r.url)) return false;
     seen.add(r.url);
     return true;
   });
 }
 
-function formatResults(source, query, results) {
-  const lines = [`Search results for "${query}" (source: ${source}):`];
-  results.slice(0, 8).forEach((r, i) => {
-    lines.push(`${i + 1}. ${r.title}`);
-    if (r.snippet) lines.push(`   ${r.snippet.slice(0, 240)}`);
-    lines.push(`   URL: ${r.url}`);
-  });
-  return lines.join('\n');
-}
-
-async function webSearch(query, onStep = () => {}) {
+async function searchWeb(query, onStep = () => {}) {
   const tried = [];
   let best = null;
   for (const src of SOURCES) {
     onStep(`trying ${src.name}…`);
     try {
       const results = dedupe(await withTimeout(src.run(query), 12000));
-      tried.push(`${src.name} (${results.length})`);
-      if (results.length >= 3) return formatResults(src.name, query, results);
-      if (results.length && (!best || results.length > best.results.length)) best = { name: src.name, results };
+      tried.push(`${src.name} ${results.length}`);
+      if (results.length >= 3) return { source: src.name, results, tried };
+      if (results.length && (!best || results.length > best.results.length)) best = { source: src.name, results };
     } catch {
-      tried.push(`${src.name} (failed)`);
+      tried.push(`${src.name} failed`);
     }
   }
-  if (best) return formatResults(best.name, query, best.results);
-  return `No search results found for "${query}". Sources tried: ${tried.join(', ')}. Tell the user you could not verify this. Do not guess.`;
+  return { source: best?.source ?? null, results: best?.results ?? [], tried };
+}
+
+/* ============================================================
+   Reading pages: the app opens the top results and keeps only
+   the sentences that match the question
+   ============================================================ */
+const STOP = new Set('the a an of in on at to for and or is are was were be by with from what whats how who when where which does do did its it this that top best me tell please give'.split(' '));
+function keywords(q) {
+  return q.toLowerCase().replace(/[^a-z0-9$%. ]/g, ' ').split(/\s+/)
+    .filter(w => w.length > 1 && !STOP.has(w) && !/^20\d\d$/.test(w));
+}
+async function readPage(url) {
+  const doc = parseHtml(await getHtml(url, 9000));
+  doc.querySelectorAll('script,style,nav,header,footer,aside,noscript,iframe,form,svg').forEach(e => e.remove());
+  doc.querySelectorAll('p,li,h1,h2,h3,h4,tr,div,br').forEach(e => e.before('\n'));
+  return (doc.body?.textContent || '').replace(/[ \t\u00a0]+/g, ' ');
+}
+function passages(text) {
+  return text.split(/\n+|(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length >= 40 && s.length <= 400);
+}
+function pickSentences(text, kws) {
+  const scored = passages(text).map(s => {
+    const low = s.toLowerCase();
+    let score = 0;
+    for (const k of kws) if (low.includes(k)) score += 2;
+    if (/\d/.test(s)) score += 1;
+    if (/billion|million|trillion|percent|%|\$|€|£/i.test(s)) score += 1;
+    return { s, score };
+  }).filter(x => x.score >= 2).sort((a, b) => b.score - a.score);
+  const seen = new Set(), out = [];
+  for (const x of scored) {
+    if (seen.has(x.s)) continue;
+    seen.add(x.s);
+    out.push(x.s);
+    if (out.length === 3) break;
+  }
+  return out;
+}
+async function gatherEvidence(query, results) {
+  const kws = keywords(query);
+  return Promise.all(results.slice(0, 3).map(async r => {
+    let excerpts = [];
+    try { excerpts = pickSentences(await withTimeout(readPage(r.url), 10000), kws); } catch {}
+    if (!excerpts.length && r.snippet) excerpts = [r.snippet];
+    return { ...r, excerpts };
+  }));
+}
+function formatEvidence(pages) {
+  return pages.map((p, i) => {
+    const lines = p.excerpts.length
+      ? p.excerpts.map(e => `- ${e.slice(0, 300)}`)
+      : ['- (no matching text found on this page)'];
+    return `[${i + 1}] ${p.title}\nURL: ${p.url}\n${lines.join('\n')}`;
+  }).join('\n\n');
+}
+
+/* Full research step: search, open pages, return evidence and sources */
+async function research(query, box) {
+  const found = await searchWeb(query, s => box?.setTitle(s));
+  if (!found.results.length) {
+    return { evidence: `No search results were found. Sources tried: ${found.tried.join(', ')}.`, sources: [] };
+  }
+  box?.setTitle(`reading pages from ${found.source}…`);
+  const sources = await gatherEvidence(query, found.results);
+  return { evidence: formatEvidence(sources), sources };
 }
 
 /* ============================================================
@@ -436,12 +484,10 @@ const TOOL_LABEL = {
   current_time: ['Checking time', 'timezone'],
 };
 const TOOL_PREFIX = 'Tool result from ';
-const RESULT_LIMIT = 2400;
 
 async function fetchWebpage(url) {
   try {
-    const html = await fetchAnyText(url, 12000);
-    const doc = parseHtml(html);
+    const doc = parseHtml(await getHtml(url, 12000));
     doc.querySelectorAll('script, style, nav, header, footer, aside, iframe, noscript').forEach(el => el.remove());
     return cleanText(doc.body?.textContent) || 'The page had no readable text.';
   } catch (err) {
@@ -451,7 +497,7 @@ async function fetchWebpage(url) {
 
 async function wikipedia(topic) {
   try {
-    const d = await fetchJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${enc(topic.replace(/ /g, '_'))}`);
+    const d = await getJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${enc(topic.replace(/ /g, '_'))}`);
     return `${d.title}: ${d.extract}`;
   } catch {
     return `No Wikipedia article found for "${topic}".`;
@@ -464,7 +510,7 @@ function calculate(raw) {
     .replace(/\bpi\b/gi, 'Math.PI')
     .replace(/\^/g, '**');
   const stripped = expr.replace(/Math\.(sqrt|pow|sin|cos|tan|log|abs|round|floor|ceil|PI)/g, '0');
-  if (!/^[0-9+\-*/().%,\s]+$/.test(stripped)) return 'Unsupported expression. Use numbers, + - * / ^, parentheses, and sqrt, pow, sin, cos, tan, log, abs, round, floor, ceil, pi.';
+  if (!/^[0-9+\-*/().%,\s]+$/.test(stripped)) return 'Unsupported expression.';
   try {
     const value = Function(`"use strict"; return (${expr});`)();
     if (typeof value !== 'number' || !isFinite(value)) return 'The result is not a finite number.';
@@ -485,20 +531,7 @@ function currentTime(timezone) {
   }
 }
 
-async function runTool(call, onStep) {
-  switch (call.name) {
-    case 'web_search': return webSearch(call.args.query, onStep);
-    case 'fetch_url': return fetchWebpage(call.args.url);
-    case 'wikipedia': return wikipedia(call.args.topic);
-    case 'calculate': return calculate(call.args.expression);
-    case 'current_time': return currentTime(call.args.timezone);
-    default: return 'Unknown tool.';
-  }
-}
-
-/* ============================================================
-   Tool-call parsing (for calls the model writes itself)
-   ============================================================ */
+/* Tool calls the model writes itself, e.g. <tool_call>web_search{"query": "..."}</tool_call> */
 function normalizeCall(name, args) {
   const param = TOOL_PARAM[name];
   if (!param) return null;
@@ -508,7 +541,6 @@ function normalizeCall(name, args) {
   if (value == null) return name === 'current_time' ? { name, args: { timezone: '' } } : null;
   return { name, args: { [param]: String(value).trim() } };
 }
-
 function parseBody(body, add) {
   const s = body.trim();
   const m = s.match(/^(web_search|fetch_url|wikipedia|calculate|current_time)\s*([\s\S]*)$/);
@@ -530,7 +562,6 @@ function parseBody(body, add) {
   }
   if (name) { const c = normalizeCall(name, obj); if (c) add(c); }
 }
-
 function extractToolCalls(text) {
   const calls = [];
   const add = c => calls.push(c);
@@ -544,9 +575,19 @@ function extractToolCalls(text) {
   }
   return { calls, cleaned: cleaned.trim() };
 }
+async function runTool(call, onStep) {
+  switch (call.name) {
+    case 'web_search': return (await research(call.args.query, { setTitle: onStep })).evidence;
+    case 'fetch_url': return fetchWebpage(call.args.url);
+    case 'wikipedia': return wikipedia(call.args.topic);
+    case 'calculate': return calculate(call.args.expression);
+    case 'current_time': return currentTime(call.args.timezone);
+    default: return 'Unknown tool.';
+  }
+}
 
 /* ============================================================
-   Routers: decided in code, not by the model
+   Routing: decided in code, not by the model
    ============================================================ */
 const FRESH_RE = /\b(current|currently|latest|today|tonight|tomorrow|right now|recent|recently|newest|this (?:week|month|year)|price|prices|net worth|worth|salary|income|news|headlines|score|scores|weather|forecast|stock|shares|exchange rate|who is the|who's the|who runs|ceo|president|prime minister|chancellor|election|released|release date|just announced|as of|last (?:week|month|year)|still|now|best|top\s*\d+|top ten|ranking|rankings|rank|list of|compare|versus|vs|202\d|203\d)\b/i;
 const needsFreshInfo = text => FRESH_RE.test(text);
@@ -562,7 +603,6 @@ function buildSearchQuery(text) {
   return /\b20\d\d\b/.test(q) ? q : `${q} ${year}`;
 }
 
-/* Percent and simple arithmetic go to the calculator, not the model */
 function quickMath(text) {
   const pct = text.match(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)/i);
   if (pct) return `${pct[1]} * ${pct[2]} / 100`;
@@ -587,13 +627,14 @@ const sideEl = $('side'), sideList = $('side-list'), newChatBtn = $('new-chat'),
 
 const STORE_KEY = 'webllm-chats-v2';
 const MODEL_KEY = 'webllm-model-v2';
-const MAX_ROUNDS = 3, MAX_HISTORY = 12;
-const THINK_LIMIT = 1400;      // characters of reasoning allowed before the answer is forced
+const MAX_HISTORY = 12;
+const THINK_LIMIT = 900;    // characters of reasoning before the app stops it and asks for a direct answer
 
 let engine = null, currentModel = null, worker = null;
 let loading = false, isGenerating = false, stopRequested = false;
 let toolsEnabled = true, thinkingEnabled = true;
 let pendingImage = null;
+let implicitThink = false;  // Qwen3 starts reasoning without an opening <think> tag
 
 /* ============================================================
    Engine: worker first (keeps the page responsive), main thread as fallback
@@ -623,6 +664,28 @@ async function checkWebGPU() {
   const adapter = await navigator.gpu.requestAdapter();
   if (!adapter) throw new Error('No WebGPU adapter found on this device.');
 }
+
+/* ============================================================
+   Thinking: split the raw output into thinking and answer
+   ============================================================ */
+function splitRaw(raw) {
+  let thinkText = null, thinkClosed = false, visible = raw;
+  const open = raw.indexOf('<think>');
+  if (open !== -1 || implicitThink) {
+    const start = open !== -1 ? open + 7 : 0;
+    const close = raw.indexOf('</think>', start);
+    thinkClosed = close !== -1;
+    thinkText = raw.slice(start, thinkClosed ? close : raw.length).trim();
+    const before = open !== -1 ? raw.slice(0, open) : '';
+    const after = thinkClosed ? raw.slice(close + 8) : '';
+    visible = before + after;
+  }
+  return { thinkText, thinkClosed, visible };
+}
+const thinkingTooLong = raw => {
+  const { thinkText, thinkClosed } = splitRaw(raw);
+  return thinkText !== null && !thinkClosed && thinkText.length > THINK_LIMIT;
+};
 
 /* ============================================================
    Saved chats
@@ -705,13 +768,8 @@ function renderChat() {
   chatEmpty.style.display = convo.length ? 'none' : '';
   for (const m of convo) {
     const text = textOf(m);
-    if (m.role === 'user') {
-      if (text.startsWith(TOOL_PREFIX)) continue;
-      addUserMessage(text, imageOf(m));
-    } else if (m.role === 'assistant') {
-      const shown = extractToolCalls(text).cleaned;
-      if (shown) addStaticAi(shown);
-    }
+    if (m.role === 'user') addUserMessage(text, imageOf(m));
+    else if (m.role === 'assistant') addStaticAi(text);
   }
   chat.scrollTop = chat.scrollHeight;
 }
@@ -876,7 +934,7 @@ function addStaticAi(text) {
   wrap.className = 'msg ai';
   const a = document.createElement('div');
   a.className = 'answer';
-  a.textContent = text;
+  a.textContent = extractToolCalls(text).cleaned || text;
   wrap.appendChild(a);
   chat.appendChild(wrap);
   scrollToBottom();
@@ -890,7 +948,7 @@ function addAiWrapper() {
   return wrap;
 }
 
-/* A segment is one model generation. Its loader shows immediately and is removed on the first token. */
+/* A segment is one model output. Its loader shows immediately and is removed on the first token. */
 function createSegment(wrapper, label = 'Thinking') {
   const el = document.createElement('div');
   el.className = 'segment';
@@ -930,14 +988,6 @@ function buildThinkBox(seg) {
   setOpen(true);
 }
 
-function splitRaw(raw) {
-  const m = raw.match(/<think>([\s\S]*?)(<\/think>|$)/);
-  return {
-    thinkText: m ? m[1].trim() : null,
-    thinkClosed: !!(m && m[2] === '</think>'),
-    visible: raw.replace(/<think>[\s\S]*?(<\/think>|$)/g, '')
-  };
-}
 function displayText(raw, streaming) {
   const { visible } = splitRaw(raw);
   if (streaming) return visible.replace(/<tool_call>[\s\S]*?(<\/tool_call>|$)/g, '').trimStart();
@@ -999,10 +1049,10 @@ function addToolBox(wrapper, call) {
   wrapper.appendChild(box);
   scrollToBottom();
   return {
-    setTitle(t) { title.textContent = `${label}: ${call.args[key] ?? ''} (${t})`; },
+    setTitle(t) { title.textContent = `${label}: ${call.args[key] ?? ''} · ${t}`; },
     setResult(text) {
       spin.replaceWith(Object.assign(document.createElement('span'), { className: 'ok', textContent: '✓' }));
-      result.textContent = text.length > 1200 ? text.slice(0, 1200) + '…' : text;
+      result.textContent = text.length > 1500 ? text.slice(0, 1500) + '…' : text;
     }
   };
 }
@@ -1015,76 +1065,58 @@ function addError(wrapper, message) {
 }
 
 /* ============================================================
-   Prompting
+   Prompts
    ============================================================ */
 function buildSystemPrompt(forceAnswer) {
-  const today = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
-  let p = `You are a helpful assistant. Today is ${today}.`;
+  let p = `You are a helpful assistant. Today is ${todayStr()}.`;
   if (toolsEnabled) {
     p += `
 
-You have tools. To use one, reply with ONLY the tool line and nothing else:
-<tool_call>web_search{"query": "short search terms"}</tool_call>
-<tool_call>fetch_url{"url": "https://example.com"}</tool_call>
-<tool_call>wikipedia{"topic": "Article title"}</tool_call>
-<tool_call>calculate{"expression": "2^10 + sqrt(144)"}</tool_call>
-<tool_call>current_time{"timezone": "Europe/London"}</tool_call>
-
-Use web_search for anything current or uncertain: news, prices, net worth, rankings, who holds a role. Use calculate for any arithmetic. Use current_time for dates and times. Answer simple things you know well without tools.
-When a tool result arrives, answer from it, name the sources, and list only items that appear in the results. If the results do not contain the answer, say so. Never invent results.`;
+You can search the web with: <tool_call>web_search{"query": "short search terms"}</tool_call>
+Use it only for current or uncertain facts. Answer simple things you know well directly.`;
   }
-  if (forceAnswer) p += `\n\nAnswer now. Do not reason at length. Give the final answer directly and briefly.`;
+  if (forceAnswer) p += `\n\nGive the final answer now. Be brief. Do not reason at length.`;
   return p;
 }
 
-function fewShot() {
-  const y = new Date().getFullYear();
-  return [
-    { role: 'user', content: 'what is 17% of 2500' },
-    { role: 'assistant', content: '<tool_call>calculate{"expression": "17 * 2500 / 100"}</tool_call>' },
-    { role: 'user', content: `${TOOL_PREFIX}calculate({"expression": "17 * 2500 / 100"}):\n17 * 2500 / 100 = 425\n\nAnswer the user's question using these results.` },
-    { role: 'assistant', content: '17% of 2500 is 425.' },
-    { role: 'user', content: 'what is the current price of gold' },
-    { role: 'assistant', content: `<tool_call>web_search{"query": "gold price today ${y}"}</tool_call>` },
-    { role: 'user', content: `${TOOL_PREFIX}web_search({"query": "gold price today ${y}"}):\nSearch results (source: Bing):\n1. Gold price today\n   URL: https://example.com/gold\n\nAnswer the user's question using these results and name the source.` },
-    { role: 'assistant', content: 'According to the example source in the results, that is the current gold price.' },
-  ];
-}
-
-/* forceAnswer: the model has thought too long, so it answers with thinking switched off */
 function buildMessages(forceAnswer = false) {
   const recent = active.convo.slice(-MAX_HISTORY).map(m => ({ ...m }));
-  const msgs = [
-    { role: 'system', content: buildSystemPrompt(forceAnswer) },
-    ...(toolsEnabled ? fewShot() : []),
-    ...recent
-  ];
+  const msgs = [{ role: 'system', content: buildSystemPrompt(forceAnswer) }, ...recent];
   const last = msgs[msgs.length - 1];
-  const skipThink = forceAnswer || !thinkingEnabled;
-  if (isQwen3(currentModel) && skipThink && last?.role === 'user') {
+  if (isQwen3(currentModel) && (forceAnswer || !thinkingEnabled) && last?.role === 'user') {
     if (typeof last.content === 'string') last.content += ' /no_think';
     else last.content = last.content.map(p => p.type === 'text' ? { ...p, text: p.text + ' /no_think' } : p);
   }
   return msgs;
 }
 
-/* ============================================================
-   Generation
-   ============================================================ */
-function thinkingTooLong(raw) {
-  const m = raw.match(/<think>([\s\S]*)$/);
-  return !!m && !m[1].includes('</think>') && m[1].length > THINK_LIMIT;
+/* Answer step: the model only sees the evidence the app collected */
+function answerMessages(question, evidence) {
+  const sys = `Today is ${todayStr()}. Answer the question using ONLY the evidence below. ` +
+    `Reply in at most four short sentences, or a short numbered list when the question asks for a list. ` +
+    `Cite sources as [1], [2]. If the question asks for more items than the evidence contains, say how many you found. ` +
+    `If the evidence does not answer the question, say you could not confirm it from the search results. ` +
+    `Do not use outside knowledge and do not guess. Do not show your reasoning.`;
+  let user = `Question: ${question}\n\nEvidence:\n${evidence}`;
+  if (isQwen3(currentModel)) user += '\n\n/no_think';
+  return [{ role: 'system', content: sys }, { role: 'user', content: user }];
 }
 
-async function streamOnce(seg) {
-  let raw = '';
-  let frame = 0;
-  let cut = false;
+/* ============================================================
+   Generation
+   mode 'chat': normal reply, may include thinking, guarded against endless reasoning
+   mode 'answer': short answer from evidence, thinking off
+   ============================================================ */
+async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048 } = {}) {
+  const guard = mode === 'chat' && thinkingEnabled;
+  implicitThink = guard && isQwen3(currentModel);
+
+  let raw = '', frame = 0, cut = false;
   const paint = () => { frame = 0; renderSegment(seg, raw, true); scrollIfNearBottom(); };
 
-  const pump = async messages => {
+  const pump = async (msgs, limit, useGuard) => {
     const stream = await engine.chat.completions.create({
-      messages, stream: true, temperature: 0.6, top_p: 0.95, max_tokens: 2048,
+      messages: msgs, stream: true, temperature: 0.6, top_p: 0.95, max_tokens: limit,
     });
     for await (const chunk of stream) {
       if (stopRequested) break;
@@ -1093,18 +1125,23 @@ async function streamOnce(seg) {
       removePending(seg);
       raw += delta;
       if (!frame) frame = requestAnimationFrame(paint);
-      if (thinkingTooLong(raw)) { cut = true; break; }
+      if (useGuard && thinkingTooLong(raw)) { cut = true; break; }
     }
   };
 
-  await pump(buildMessages(false));
+  await pump(messages, maxTokens, guard);
 
-  // The model is stuck in its reasoning: stop it, close the think block, and get a direct answer
+  // The model is stuck reasoning: stop it and ask again for a direct answer
   if (cut && !stopRequested) {
     try { engine.interruptGenerate(); } catch {}
-    await sleep(60);
-    raw += '\n</think>\n\n';
-    await pump(buildMessages(true));
+    await sleep(80);
+    if (frame) { cancelAnimationFrame(frame); frame = 0; }
+    seg.think?.box.remove(); seg.think = null;
+    seg.body?.remove(); seg.body = null;
+    seg.thinkStart = null; seg.thinkEnd = null;
+    raw = '';
+    implicitThink = false;
+    await pump(buildMessages(true), 400, false);
   }
 
   if (frame) cancelAnimationFrame(frame);
@@ -1112,17 +1149,33 @@ async function streamOnce(seg) {
   return raw;
 }
 
-/* Store a tool call and its result in the chat history so the model sees them next turn */
-function pushToolExchange(call, result) {
-  const args = JSON.stringify(call.args);
-  active.convo.push({ role: 'assistant', content: `<tool_call>${call.name}${args}</tool_call>` });
-  active.convo.push({
-    role: 'user',
-    content: `${TOOL_PREFIX}${call.name}(${args}):\n${result.slice(0, RESULT_LIMIT)}\n\n` +
-             `Answer the user's question using these results. Name the sources. If the results do not contain the answer, say so.`
-  });
+/* Writes the final answer, followed by the real source links */
+async function answerStream(seg, question, evidence, sources) {
+  const raw = await streamOnce(seg, answerMessages(question, evidence), { mode: 'answer', maxTokens: 400 });
+  implicitThink = false;
+  removePending(seg);
+  let answer = splitRaw(raw).visible.trim();
+  if (!answer) {
+    answer = sources.length
+      ? 'I could not form a clear answer from these results. Check the sources below.'
+      : 'I could not find this in the search results.';
+  }
+  const src = sources.length
+    ? `\n\nSources:\n${sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join('\n')}`
+    : '';
+  seg.el.innerHTML = '';
+  const body = document.createElement('div');
+  body.className = 'answer';
+  body.textContent = answer + src;
+  seg.el.appendChild(body);
+  seg.body = body;
+  scrollToBottom();
+  return answer + src;
 }
 
+/* ============================================================
+   Send
+   ============================================================ */
 async function sendMessage() {
   const text = userInput.value.trim();
   if ((!text && !pendingImage) || isGenerating || !engine) return;
@@ -1145,67 +1198,72 @@ async function sendMessage() {
 
   const wrapper = addAiWrapper();
   let seg = createSegment(wrapper, 'Thinking');
+  let finalText = '';
 
   try {
     const math = toolsEnabled && text && !image ? quickMath(text) : null;
     const fresh = !math && toolsEnabled && text && !image && needsFreshInfo(text);
 
-    if (math) {
+    if (math || fresh) {
+      // Code decides: arithmetic goes to the calculator, current facts go to search
       seg.el.remove();
-      const call = { name: 'calculate', args: { expression: math } };
-      const box = addToolBox(wrapper, call);
-      const result = calculate(math);
-      box.setResult(result);
-      pushToolExchange(call, result);
+      let evidence, sources = [];
+      if (math) {
+        const box = addToolBox(wrapper, { name: 'calculate', args: { expression: math } });
+        evidence = calculate(math);
+        box.setResult(evidence);
+      } else {
+        const query = buildSearchQuery(text);
+        const box = addToolBox(wrapper, { name: 'web_search', args: { query } });
+        const r = await research(query, box);
+        evidence = r.evidence;
+        sources = r.sources;
+        box.setResult(evidence);
+      }
       if (stopRequested) throw new Error('Stopped');
-      seg = createSegment(wrapper, 'Answering');
-    } else if (fresh) {
-      seg.el.remove();
-      const query = buildSearchQuery(text);
-      const call = { name: 'web_search', args: { query } };
-      const box = addToolBox(wrapper, call);
-      const result = await runTool(call, step => box.setTitle(step));
-      box.setResult(result);
-      pushToolExchange(call, result);
-      if (stopRequested) throw new Error('Stopped');
-      seg = createSegment(wrapper, 'Reading results');
-    }
-
-    for (let round = 0; round < MAX_ROUNDS; round++) {
-      const raw = await streamOnce(seg);
+      seg = createSegment(wrapper, 'Writing answer');
+      finalText = await answerStream(seg, prompt, evidence, sources);
+    } else {
+      // Normal chat. The model may still ask for a tool itself.
+      const raw = await streamOnce(seg, buildMessages(false), { mode: 'chat' });
       const visible = splitRaw(raw).visible.trim();
       const { calls, cleaned } = extractToolCalls(visible);
-      const usable = toolsEnabled ? calls : [];
-      const lastRound = round === MAX_ROUNDS - 1;
-
-      if (stopRequested || !usable.length || lastRound) {
-        finalizeSegment(seg, raw);
-        active.convo.push({ role: 'assistant', content: cleaned || visible || '…' });
-        break;
-      }
-
       finalizeSegment(seg, raw);
-      active.convo.push({ role: 'assistant', content: visible });
-      for (const call of usable) {
-        if (stopRequested) break;
+      implicitThink = false;
+
+      if (!toolsEnabled || !calls.length || stopRequested) {
+        finalText = cleaned || visible || '…';
+        if (!seg.body && !seg.think) {
+          const body = document.createElement('div');
+          body.className = 'answer';
+          body.textContent = finalText;
+          wrapper.appendChild(body);
+        }
+      } else {
+        const call = calls[0];
         const box = addToolBox(wrapper, call);
-        const result = await runTool(call, step => box.setTitle(step));
-        box.setResult(result);
-        active.convo.push({
-          role: 'user',
-          content: `${TOOL_PREFIX}${call.name}(${JSON.stringify(call.args)}):\n${result.slice(0, RESULT_LIMIT)}\n\n` +
-                   `Answer the user's question using these results. Name the sources.`
-        });
+        let evidence, sources = [];
+        if (call.name === 'web_search') {
+          const r = await research(call.args.query, box);
+          evidence = r.evidence;
+          sources = r.sources;
+        } else {
+          evidence = await runTool(call, s => box.setTitle(s));
+        }
+        box.setResult(evidence);
+        if (stopRequested) throw new Error('Stopped');
+        seg = createSegment(wrapper, 'Writing answer');
+        finalText = await answerStream(seg, prompt, evidence, sources);
       }
-      if (stopRequested) break;
-      seg = createSegment(wrapper, 'Reading results');
     }
+    active.convo.push({ role: 'assistant', content: finalText || '…' });
   } catch (err) {
     if (err.message !== 'Stopped') addError(wrapper, err.message || String(err));
   } finally {
     removePending(seg);
     if (!wrapper.children.length) wrapper.remove();
     isGenerating = false;
+    implicitThink = false;
     updateButtons();
     saveActive();
     userInput.focus();
