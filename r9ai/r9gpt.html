@@ -10,7 +10,6 @@
 html, body { height: 100%; }
 body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #fff; overflow: hidden; background: #1e1b4b; }
 
-/* Background: no CSS blur filters (they are expensive while the GPU runs the model) */
 .bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #6d28d9 60%, #be185d 85%, #0ea5e9 120%); }
 .orb { position: absolute; width: 55vmax; height: 55vmax; border-radius: 50%; animation: drift 24s ease-in-out infinite alternate; will-change: transform; }
 .orb.a { background: radial-gradient(circle, rgba(56,189,248,.55), rgba(56,189,248,0) 65%); top: -20vmax; left: -15vmax; }
@@ -19,14 +18,11 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 @keyframes drift { to { transform: translate(4vmax, 3vmax) scale(1.06); } }
 @media (prefers-reduced-motion: reduce) { .orb { animation: none; } }
 
-/* Glass: only on a few large panels, never on the scrolling chat or message bubbles */
 .glass { background: rgba(255,255,255,.14); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(8,6,30,.3), inset 0 1px 0 rgba(255,255,255,.25); border-radius: 22px; }
 
-/* Layout */
 .layout { position: relative; z-index: 1; height: 100%; display: flex; gap: 12px; padding: 14px; max-width: 1200px; margin: 0 auto; }
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
 
-/* Sidebar */
 .side { width: 250px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; padding: 14px; min-height: 0; }
 .side-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.55); padding: 0 4px; }
 .side-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
@@ -40,7 +36,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .side-item button:hover { color: #fecdd3; background: rgba(244,63,94,.25); }
 .empty-note { font-size: .8rem; color: rgba(255,255,255,.55); padding: 4px; }
 
-/* Buttons */
 .btn { border: 1px solid var(--border); background: rgba(255,255,255,.16); color: #fff; padding: .65rem 1.05rem; border-radius: 14px; font: inherit; font-weight: 600; font-size: .88rem; cursor: pointer; white-space: nowrap; transition: background .2s, opacity .2s; }
 .btn:hover:not(:disabled) { background: rgba(255,255,255,.28); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
@@ -49,7 +44,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .btn.full { width: 100%; }
 .side-toggle { display: none; }
 
-/* Header */
 .header { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .title-row { display: flex; align-items: center; gap: 10px; }
 .title { font-size: 1.15rem; font-weight: 650; white-space: nowrap; }
@@ -67,7 +61,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 #progress-fill { height: 100%; width: 0%; transition: width .3s; background: linear-gradient(90deg, #4ade80, #22c55e); }
 .hint { font-size: .74rem; color: rgba(255,255,255,.6); }
 
-/* Chat (no backdrop filter here, so scrolling and streaming stay light) */
 .chat { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,.07); border: 1px solid var(--border); border-radius: 22px; overscroll-behavior: contain; }
 .chat::-webkit-scrollbar { width: 8px; }
 .chat::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 8px; }
@@ -79,7 +72,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .answer { white-space: pre-wrap; }
 .segment + .segment { margin-top: 10px; }
 
-/* Loader */
 .pending { display: flex; align-items: center; gap: 12px; padding: 4px 2px; }
 .skel { display: flex; flex-direction: column; gap: 7px; width: 120px; }
 .skel i { display: block; height: 8px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.45), rgba(255,255,255,.12)); background-size: 200% 100%; animation: sweep 1.4s linear infinite; }
@@ -92,7 +84,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes bob { 0%, 80%, 100% { transform: translateY(0); opacity: .4; } 40% { transform: translateY(-6px); opacity: 1; } }
 
-/* Thinking */
 .think { margin-bottom: 10px; border-radius: 14px; overflow: hidden; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.14); }
 .think-head { width: 100%; display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: none; border: 0; color: var(--muted); font: inherit; font-size: .84rem; cursor: pointer; text-align: left; }
 .think-head:hover { color: #fff; background: rgba(255,255,255,.06); }
@@ -103,19 +94,17 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .think-body { display: none; padding: 10px 12px 12px; max-height: 260px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,.1); font-size: .83rem; font-style: italic; line-height: 1.5; color: rgba(255,255,255,.7); white-space: pre-wrap; }
 .think-body.open { display: block; }
 
-/* Tool boxes: collapsed by default */
 .tool { margin: 6px 0 10px; border-radius: 14px; overflow: hidden; font-size: .84rem; background: rgba(59,130,246,.16); border: 1px solid rgba(96,165,250,.35); }
 .tool-head { width: 100%; display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: none; border: 0; color: #bfdbfe; font: inherit; font-weight: 600; font-size: .84rem; cursor: pointer; text-align: left; }
 .tool-head:hover { background: rgba(255,255,255,.06); }
 .tool-head .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tool-head .ok { color: #86efac; }
-.tool-result { display: none; padding: 8px 12px 10px; border-top: 1px solid rgba(96,165,250,.25); max-height: 200px; overflow-y: auto; white-space: pre-wrap; color: #bbf7d0; font-size: .78rem; }
+.tool-result { display: none; padding: 8px 12px 10px; border-top: 1px solid rgba(96,165,250,.25); max-height: 260px; overflow-y: auto; white-space: pre-wrap; color: #bbf7d0; font-size: .78rem; }
 .tool-result.open { display: block; }
 .spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(191,219,254,.3); border-top-color: #bfdbfe; animation: spin .8s linear infinite; flex-shrink: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error { color: #fecdd3; background: rgba(244,63,94,.18); border: 1px solid rgba(244,63,94,.4); border-radius: 12px; padding: 10px 12px; font-size: .88rem; }
 
-/* Composer */
 .composer { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .attach-chip { display: none; align-items: center; gap: 8px; width: fit-content; padding: 6px 8px 6px 6px; border-radius: 12px; background: rgba(255,255,255,.14); font-size: .8rem; color: var(--muted); }
 .attach-chip.on { display: flex; }
@@ -132,7 +121,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 #stop-btn { height: 48px; display: none; }
 #stop-btn.visible { display: inline-block; }
 
-/* Modal */
 .modal-overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; background: rgba(10,8,30,.5); }
 .modal-overlay.visible { display: flex; }
 .modal { max-width: 380px; width: calc(100% - 40px); padding: 26px; text-align: center; background: rgba(40,30,90,.85); border-radius: 22px; }
@@ -141,7 +129,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .modal-buttons { display: flex; gap: 10px; justify-content: center; }
 .modal-buttons .btn { min-width: 110px; }
 
-/* Mobile */
 @media (max-width: 760px) {
   .layout { padding: 8px; gap: 8px; }
   .side { position: fixed; left: 8px; top: 8px; bottom: 8px; width: min(280px, 80vw); z-index: 20; transform: translateX(-120%); transition: transform .3s ease; }
@@ -181,7 +168,7 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
         <div class="toggle active" id="toggle-thinking">💭 Thinking</div>
       </div>
       <div class="progress" id="progress-bar"><div id="progress-fill"></div></div>
-      <div class="hint">Tools: web search (automatic for current info), read a page, Wikipedia, calculator, current time · Vision: Phi-3.5-vision, Gemma-3</div>
+      <div class="hint">Search: SearXNG, DuckDuckGo, Bing, Mojeek, Google, then Wikipedia as fallbacks · Calculator runs in code · Vision: Phi-3.5-vision, Gemma-3</div>
     </header>
 
     <main class="chat" id="chat">
@@ -260,9 +247,185 @@ function resolveModelId(input) {
 const isVisionModel = id => /vision|gemma-3|-vl|qwen2-vl|llava/i.test(id || '');
 const isQwen3 = id => /qwen3/i.test(id || '');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const enc = encodeURIComponent;
+const cleanText = s => (s || '').replace(/\s+/g, ' ').trim();
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
 
 /* ============================================================
-   Tools
+   Web search with a fallback chain
+   Each source is tried in order. The first one that returns
+   at least 3 results wins. If none reach 3, the one with the
+   most results is used. Failed sources are skipped.
+   ============================================================ */
+const SEARX_INSTANCES = [
+  'https://searx.be',
+  'https://search.sapti.me',
+  'https://priv.au',
+  'https://searx.tiekoetter.com',
+  'https://search.bus-hit.me',
+];
+
+const CORS_PROXIES = [
+  u => `https://api.allorigins.win/raw?url=${enc(u)}`,
+  u => `https://corsproxy.io/?${enc(u)}`,
+  u => `https://api.codetabs.com/v1/proxy/?quest=${enc(u)}`,
+];
+
+async function fetchText(url, timeout = 8000) {
+  const r = await fetch(url, { signal: AbortSignal.timeout(timeout) });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.text();
+}
+async function fetchJson(url, timeout = 8000) {
+  const r = await fetch(url, { signal: AbortSignal.timeout(timeout), headers: { Accept: 'application/json' } });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+/* Direct first (fast when allowed), then public CORS proxies for HTML search pages */
+async function fetchAnyText(url, timeout = 9000) {
+  try { return await fetchText(url, timeout); } catch {}
+  let lastErr = new Error('blocked');
+  for (const make of CORS_PROXIES) {
+    try { return await fetchText(make(url), timeout); } catch (e) { lastErr = e; }
+  }
+  throw lastErr;
+}
+const parseHtml = html => new DOMParser().parseFromString(html, 'text/html');
+
+function unwrapDdg(href) {
+  try { const u = new URL(href, 'https://duckduckgo.com'); return u.searchParams.get('uddg') || u.href; }
+  catch { return href; }
+}
+function unwrapGoogle(href) {
+  try { const u = new URL(href, 'https://www.google.com'); return u.searchParams.get('q') || u.href; }
+  catch { return href; }
+}
+
+const SOURCES = [
+  {
+    name: 'SearXNG',
+    run: async q => {
+      for (const base of SEARX_INSTANCES) {
+        try {
+          const d = await fetchJson(`${base}/search?q=${enc(q)}&format=json&language=en`);
+          const r = (d.results || []).map(x => ({ title: x.title, url: x.url, snippet: cleanText(x.content) }));
+          if (r.length) return r;
+        } catch {}
+      }
+      return [];
+    }
+  },
+  {
+    name: 'DuckDuckGo',
+    run: async q => {
+      const doc = parseHtml(await fetchAnyText(`https://html.duckduckgo.com/html/?q=${enc(q)}`));
+      return [...doc.querySelectorAll('.result')].map(el => {
+        const a = el.querySelector('.result__a');
+        if (!a) return null;
+        return { title: cleanText(a.textContent), url: unwrapDdg(a.getAttribute('href') || ''), snippet: cleanText(el.querySelector('.result__snippet')?.textContent) };
+      }).filter(Boolean);
+    }
+  },
+  {
+    name: 'Bing',
+    run: async q => {
+      const doc = parseHtml(await fetchAnyText(`https://www.bing.com/search?q=${enc(q)}&setlang=en`));
+      return [...doc.querySelectorAll('li.b_algo')].map(el => {
+        const a = el.querySelector('h2 a');
+        if (!a) return null;
+        return { title: cleanText(a.textContent), url: a.getAttribute('href') || '', snippet: cleanText(el.querySelector('.b_caption p, p')?.textContent) };
+      }).filter(Boolean);
+    }
+  },
+  {
+    name: 'Mojeek',
+    run: async q => {
+      const doc = parseHtml(await fetchAnyText(`https://www.mojeek.com/search?q=${enc(q)}`));
+      return [...doc.querySelectorAll('ul.results-standard li')].map(el => {
+        const a = el.querySelector('h2 a');
+        if (!a) return null;
+        return { title: cleanText(a.textContent), url: a.getAttribute('href') || '', snippet: cleanText(el.querySelector('p.s, p')?.textContent) };
+      }).filter(Boolean);
+    }
+  },
+  {
+    name: 'Google',
+    run: async q => {
+      const doc = parseHtml(await fetchAnyText(`https://www.google.com/search?q=${enc(q)}&hl=en`));
+      return [...doc.querySelectorAll('h3')].map(h => {
+        const a = h.closest('a');
+        if (!a) return null;
+        const container = h.closest('div.g, div[data-hveid]');
+        const snippet = cleanText(container?.textContent || '').replace(cleanText(h.textContent), '').slice(0, 300);
+        return { title: cleanText(h.textContent), url: unwrapGoogle(a.getAttribute('href') || ''), snippet };
+      }).filter(Boolean);
+    }
+  },
+  {
+    name: 'DuckDuckGo Instant',
+    run: async q => {
+      const d = await fetchJson(`https://api.duckduckgo.com/?q=${enc(q)}&format=json&no_html=1&skip_disambig=1`);
+      const out = [];
+      if (d.AbstractText) out.push({ title: d.Heading || q, url: d.AbstractURL || '', snippet: cleanText(d.AbstractText) });
+      for (const t of d.RelatedTopics || []) {
+        const items = t.Topics ? t.Topics : [t];
+        for (const it of items) if (it.Text && it.FirstURL) out.push({ title: it.Text.slice(0, 90), url: it.FirstURL, snippet: it.Text });
+      }
+      return out;
+    }
+  },
+  {
+    name: 'Wikipedia',
+    run: async q => {
+      const d = await fetchJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${enc(q)}&format=json&origin=*&srlimit=6`);
+      return (d.query?.search || []).map(x => ({
+        title: x.title,
+        url: `https://en.wikipedia.org/wiki/${enc(x.title.replace(/ /g, '_'))}`,
+        snippet: cleanText(x.snippet.replace(/<[^>]*>/g, ''))
+      }));
+    }
+  },
+];
+
+function dedupe(results) {
+  const seen = new Set();
+  return results.filter(r => {
+    if (!r.url || !r.title || seen.has(r.url)) return false;
+    seen.add(r.url);
+    return true;
+  });
+}
+
+function formatResults(source, query, results) {
+  const lines = [`Search results for "${query}" (source: ${source}):`];
+  results.slice(0, 8).forEach((r, i) => {
+    lines.push(`${i + 1}. ${r.title}`);
+    if (r.snippet) lines.push(`   ${r.snippet.slice(0, 240)}`);
+    lines.push(`   URL: ${r.url}`);
+  });
+  return lines.join('\n');
+}
+
+async function webSearch(query, onStep = () => {}) {
+  const tried = [];
+  let best = null;
+  for (const src of SOURCES) {
+    onStep(`trying ${src.name}…`);
+    try {
+      const results = dedupe(await withTimeout(src.run(query), 12000));
+      tried.push(`${src.name} (${results.length})`);
+      if (results.length >= 3) return formatResults(src.name, query, results);
+      if (results.length && (!best || results.length > best.results.length)) best = { name: src.name, results };
+    } catch {
+      tried.push(`${src.name} (failed)`);
+    }
+  }
+  if (best) return formatResults(best.name, query, best.results);
+  return `No search results found for "${query}". Sources tried: ${tried.join(', ')}. Tell the user you could not verify this. Do not guess.`;
+}
+
+/* ============================================================
+   Other tools
    ============================================================ */
 const TOOL_PARAM = { web_search: 'query', fetch_url: 'url', wikipedia: 'topic', calculate: 'expression', current_time: 'timezone' };
 const TOOL_LABEL = {
@@ -273,8 +436,69 @@ const TOOL_LABEL = {
   current_time: ['Checking time', 'timezone'],
 };
 const TOOL_PREFIX = 'Tool result from ';
-const MODEL_RESULT_LIMIT = 1500;
+const RESULT_LIMIT = 2400;
 
+async function fetchWebpage(url) {
+  try {
+    const html = await fetchAnyText(url, 12000);
+    const doc = parseHtml(html);
+    doc.querySelectorAll('script, style, nav, header, footer, aside, iframe, noscript').forEach(el => el.remove());
+    return cleanText(doc.body?.textContent) || 'The page had no readable text.';
+  } catch (err) {
+    return `Failed to fetch page: ${err.message}`;
+  }
+}
+
+async function wikipedia(topic) {
+  try {
+    const d = await fetchJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${enc(topic.replace(/ /g, '_'))}`);
+    return `${d.title}: ${d.extract}`;
+  } catch {
+    return `No Wikipedia article found for "${topic}".`;
+  }
+}
+
+function calculate(raw) {
+  const expr = raw
+    .replace(/\b(sqrt|pow|sin|cos|tan|log|abs|round|floor|ceil)\b/g, 'Math.$1')
+    .replace(/\bpi\b/gi, 'Math.PI')
+    .replace(/\^/g, '**');
+  const stripped = expr.replace(/Math\.(sqrt|pow|sin|cos|tan|log|abs|round|floor|ceil|PI)/g, '0');
+  if (!/^[0-9+\-*/().%,\s]+$/.test(stripped)) return 'Unsupported expression. Use numbers, + - * / ^, parentheses, and sqrt, pow, sin, cos, tan, log, abs, round, floor, ceil, pi.';
+  try {
+    const value = Function(`"use strict"; return (${expr});`)();
+    if (typeof value !== 'number' || !isFinite(value)) return 'The result is not a finite number.';
+    return `${raw} = ${Number(value.toPrecision(12))}`;
+  } catch {
+    return 'Could not evaluate that expression.';
+  }
+}
+
+function currentTime(timezone) {
+  const now = new Date();
+  try {
+    const opts = { dateStyle: 'full', timeStyle: 'long' };
+    if (timezone) opts.timeZone = timezone;
+    return now.toLocaleString('en-GB', opts);
+  } catch {
+    return `Unknown timezone "${timezone}". Local time: ${now.toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'long' })}`;
+  }
+}
+
+async function runTool(call, onStep) {
+  switch (call.name) {
+    case 'web_search': return webSearch(call.args.query, onStep);
+    case 'fetch_url': return fetchWebpage(call.args.url);
+    case 'wikipedia': return wikipedia(call.args.topic);
+    case 'calculate': return calculate(call.args.expression);
+    case 'current_time': return currentTime(call.args.timezone);
+    default: return 'Unknown tool.';
+  }
+}
+
+/* ============================================================
+   Tool-call parsing (for calls the model writes itself)
+   ============================================================ */
 function normalizeCall(name, args) {
   const param = TOOL_PARAM[name];
   if (!param) return null;
@@ -318,125 +542,33 @@ function extractToolCalls(text) {
       const before = calls.length; parseBody(whole, add); return calls.length > before ? '' : whole;
     });
   }
-  if (!calls.length) {
-    cleaned = cleaned.replace(/\{[^{}]*\}/g, whole => {
-      const before = calls.length; parseBody(whole, add); return calls.length > before ? '' : whole;
-    });
-  }
   return { calls, cleaned: cleaned.trim() };
 }
 
-async function webSearch(query) {
-  const results = [];
-  for (const instance of ['https://searx.be', 'https://search.sapti.me', 'https://search.inetol.net']) {
-    try {
-      const res = await fetch(`${instance}/search?q=${encodeURIComponent(query)}&format=json`, { signal: AbortSignal.timeout(7000) });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.results?.length) {
-          results.push('Web results:');
-          for (const r of data.results.slice(0, 5)) {
-            results.push(`• ${r.title}`);
-            if (r.content) results.push(`  ${r.content.substring(0, 200)}`);
-            results.push(`  URL: ${r.url}`);
-          }
-          return results.join('\n');
-        }
-      }
-    } catch {}
-  }
-  try {
-    const ddg = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`, { signal: AbortSignal.timeout(7000) });
-    const d = await ddg.json();
-    if (d.AbstractText) results.push(`DuckDuckGo: ${d.AbstractText}${d.AbstractURL ? ` (${d.AbstractURL})` : ''}`);
-  } catch {}
-  try {
-    const wiki = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=4`, { signal: AbortSignal.timeout(8000) });
-    const data = await wiki.json();
-    if (data.query?.search?.length) {
-      results.push('Wikipedia:');
-      for (const item of data.query.search) results.push(`• ${item.title}: ${item.snippet.replace(/<[^>]*>/g, '')}`);
-    }
-  } catch {}
-  return results.length ? results.join('\n') : `No results found for "${query}".`;
-}
-
-async function fetchWebpage(url) {
-  try {
-    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(12000) });
-    const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-    doc.querySelectorAll('script, style, nav, header, footer, aside, iframe, noscript').forEach(el => el.remove());
-    return (doc.body?.textContent || '').replace(/\s+/g, ' ').trim() || 'The page had no readable text.';
-  } catch (err) {
-    return `Failed to fetch page: ${err.message}`;
-  }
-}
-
-async function wikipedia(topic) {
-  try {
-    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic.replace(/ /g, '_'))}`, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return `No Wikipedia article found for "${topic}".`;
-    const data = await res.json();
-    return `${data.title}: ${data.extract}`;
-  } catch (err) {
-    return `Wikipedia lookup failed: ${err.message}`;
-  }
-}
-
-function calculate(raw) {
-  const expr = raw
-    .replace(/\b(sqrt|pow|sin|cos|tan|log|abs|round|floor|ceil)\b/g, 'Math.$1')
-    .replace(/\bpi\b/gi, 'Math.PI')
-    .replace(/\^/g, '**');
-  const stripped = expr.replace(/Math\.(sqrt|pow|sin|cos|tan|log|abs|round|floor|ceil|PI)/g, '0');
-  if (!/^[0-9+\-*/().%,\s]+$/.test(stripped)) return 'Unsupported expression. Use numbers, + - * / ^, parentheses, and sqrt, pow, sin, cos, tan, log, abs, round, floor, ceil, pi.';
-  try {
-    const value = Function(`"use strict"; return (${expr});`)();
-    if (typeof value !== 'number' || !isFinite(value)) return 'The result is not a finite number.';
-    return `${raw} = ${Number(value.toPrecision(12))}`;
-  } catch {
-    return 'Could not evaluate that expression.';
-  }
-}
-
-function currentTime(timezone) {
-  const now = new Date();
-  try {
-    const opts = { dateStyle: 'full', timeStyle: 'long' };
-    if (timezone) opts.timeZone = timezone;
-    return now.toLocaleString('en-GB', opts);
-  } catch {
-    return `Unknown timezone "${timezone}". Local time: ${now.toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'long' })}`;
-  }
-}
-
-async function runTool(call) {
-  switch (call.name) {
-    case 'web_search': return webSearch(call.args.query);
-    case 'fetch_url': return fetchWebpage(call.args.url);
-    case 'wikipedia': return wikipedia(call.args.topic);
-    case 'calculate': return calculate(call.args.expression);
-    case 'current_time': return currentTime(call.args.timezone);
-    default: return 'Unknown tool.';
-  }
-}
-
 /* ============================================================
-   Search router: decides in code, not in the model, when a question
-   needs fresh information. The app runs the search itself.
+   Routers: decided in code, not by the model
    ============================================================ */
-const FRESH_RE = /\b(current|currently|latest|today|tonight|tomorrow|right now|recent|recently|newest|this (?:week|month|year)|price|prices|net worth|worth|salary|income|news|headlines|score|scores|weather|forecast|stock|shares|exchange rate|who is the|who's the|who runs|ceo|president|prime minister|chancellor|election|released|release date|just announced|as of|last (?:week|month|year)|still|now|202\d|203\d)\b/i;
+const FRESH_RE = /\b(current|currently|latest|today|tonight|tomorrow|right now|recent|recently|newest|this (?:week|month|year)|price|prices|net worth|worth|salary|income|news|headlines|score|scores|weather|forecast|stock|shares|exchange rate|who is the|who's the|who runs|ceo|president|prime minister|chancellor|election|released|release date|just announced|as of|last (?:week|month|year)|still|now|best|top\s*\d+|top ten|ranking|rankings|rank|list of|compare|versus|vs|202\d|203\d)\b/i;
 const needsFreshInfo = text => FRESH_RE.test(text);
 
 function buildSearchQuery(text) {
   const year = new Date().getFullYear();
   const cleaned = text
     .replace(/[?!.]+/g, ' ')
-    .replace(/\b(what|whats|what's|is|are|the|a|an|tell me|me|please|how much|how many|do you know)\b/gi, ' ')
+    .replace(/\b(what|whats|what's|is|are|the|a|an|tell me|me|please|how much|how many|do you know|can you|give me)\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
   const q = cleaned.length > 3 ? cleaned : text;
   return /\b20\d\d\b/.test(q) ? q : `${q} ${year}`;
+}
+
+/* Percent and simple arithmetic go to the calculator, not the model */
+function quickMath(text) {
+  const pct = text.match(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)/i);
+  if (pct) return `${pct[1]} * ${pct[2]} / 100`;
+  const expr = text.trim().match(/^(?:what(?:'s| is)\s+)?([\d\s.+\-*/()^]+?)\s*[?=]?$/i);
+  if (expr && /\d/.test(expr[1]) && /[+\-*/^]/.test(expr[1])) return expr[1].trim();
+  return null;
 }
 
 /* ============================================================
@@ -456,6 +588,7 @@ const sideEl = $('side'), sideList = $('side-list'), newChatBtn = $('new-chat'),
 const STORE_KEY = 'webllm-chats-v2';
 const MODEL_KEY = 'webllm-model-v2';
 const MAX_ROUNDS = 3, MAX_HISTORY = 12;
+const THINK_LIMIT = 1400;      // characters of reasoning allowed before the answer is forced
 
 let engine = null, currentModel = null, worker = null;
 let loading = false, isGenerating = false, stopRequested = false;
@@ -475,18 +608,16 @@ function getWorker() {
   worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })), { type: 'module' });
   return worker;
 }
-
 async function createEngine(id, onProgress) {
   try {
     return await CreateWebWorkerMLCEngine(getWorker(), id, { initProgressCallback: onProgress });
   } catch (err) {
-    console.warn('Worker engine failed, using main thread instead:', err);
+    console.warn('Worker engine failed, using main thread:', err);
     try { worker?.terminate(); } catch {}
     worker = null;
     return await CreateMLCEngine(id, { initProgressCallback: onProgress });
   }
 }
-
 async function checkWebGPU() {
   if (!navigator.gpu) throw new Error('WebGPU is not available. Use a recent Chrome or Edge browser.');
   const adapter = await navigator.gpu.requestAdapter();
@@ -584,7 +715,6 @@ function renderChat() {
   }
   chat.scrollTop = chat.scrollHeight;
 }
-
 sideToggle.onclick = () => sideEl.classList.toggle('open');
 newChatBtn.onclick = newChat;
 
@@ -662,7 +792,7 @@ userInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKe
 sendBtn.onclick = sendMessage;
 
 /* ============================================================
-   Model loading: retries, fallback to the default model, and a clear error
+   Model loading: retries, fallback to the default model, clear errors
    ============================================================ */
 loadBtn.onclick = () => loadModel({ auto: false });
 modelInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadModel({ auto: false }); });
@@ -869,9 +999,10 @@ function addToolBox(wrapper, call) {
   wrapper.appendChild(box);
   scrollToBottom();
   return {
+    setTitle(t) { title.textContent = `${label}: ${call.args[key] ?? ''} (${t})`; },
     setResult(text) {
       spin.replaceWith(Object.assign(document.createElement('span'), { className: 'ok', textContent: '✓' }));
-      result.textContent = text.length > 800 ? text.slice(0, 800) + '…' : text;
+      result.textContent = text.length > 1200 ? text.slice(0, 1200) + '…' : text;
     }
   };
 }
@@ -886,7 +1017,7 @@ function addError(wrapper, message) {
 /* ============================================================
    Prompting
    ============================================================ */
-function buildSystemPrompt() {
+function buildSystemPrompt(forceAnswer) {
   const today = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
   let p = `You are a helpful assistant. Today is ${today}.`;
   if (toolsEnabled) {
@@ -899,35 +1030,38 @@ You have tools. To use one, reply with ONLY the tool line and nothing else:
 <tool_call>calculate{"expression": "2^10 + sqrt(144)"}</tool_call>
 <tool_call>current_time{"timezone": "Europe/London"}</tool_call>
 
-Use web_search for anything current or uncertain: news, prices, net worth, who holds a role, recent events. Use calculate for any arithmetic. Use current_time for dates and times. Use wikipedia for background. Answer simple things you know well without tools.
-When a tool result arrives, answer from it and name your sources. If the results do not contain the answer, say so. Never invent results.`;
+Use web_search for anything current or uncertain: news, prices, net worth, rankings, who holds a role. Use calculate for any arithmetic. Use current_time for dates and times. Answer simple things you know well without tools.
+When a tool result arrives, answer from it, name the sources, and list only items that appear in the results. If the results do not contain the answer, say so. Never invent results.`;
   }
+  if (forceAnswer) p += `\n\nAnswer now. Do not reason at length. Give the final answer directly and briefly.`;
   return p;
 }
 
 function fewShot() {
   const y = new Date().getFullYear();
   return [
-    { role: 'user', content: 'what is 17% of 2300' },
-    { role: 'assistant', content: '<tool_call>calculate{"expression": "0.17 * 2300"}</tool_call>' },
-    { role: 'user', content: `${TOOL_PREFIX}calculate({"expression": "0.17 * 2300"}):\n0.17 * 2300 = 391\n\nAnswer the user's question using these results.` },
-    { role: 'assistant', content: '17% of 2300 is 391.' },
+    { role: 'user', content: 'what is 17% of 2500' },
+    { role: 'assistant', content: '<tool_call>calculate{"expression": "17 * 2500 / 100"}</tool_call>' },
+    { role: 'user', content: `${TOOL_PREFIX}calculate({"expression": "17 * 2500 / 100"}):\n17 * 2500 / 100 = 425\n\nAnswer the user's question using these results.` },
+    { role: 'assistant', content: '17% of 2500 is 425.' },
     { role: 'user', content: 'what is the current price of gold' },
     { role: 'assistant', content: `<tool_call>web_search{"query": "gold price today ${y}"}</tool_call>` },
-    { role: 'user', content: `${TOOL_PREFIX}web_search({"query": "gold price today ${y}"}):\nWeb results:\n• Gold price today (example source)\n\nAnswer the user's question using these results and name the source.` },
+    { role: 'user', content: `${TOOL_PREFIX}web_search({"query": "gold price today ${y}"}):\nSearch results (source: Bing):\n1. Gold price today\n   URL: https://example.com/gold\n\nAnswer the user's question using these results and name the source.` },
     { role: 'assistant', content: 'According to the example source in the results, that is the current gold price.' },
   ];
 }
 
-function buildMessages() {
+/* forceAnswer: the model has thought too long, so it answers with thinking switched off */
+function buildMessages(forceAnswer = false) {
   const recent = active.convo.slice(-MAX_HISTORY).map(m => ({ ...m }));
   const msgs = [
-    { role: 'system', content: buildSystemPrompt() },
+    { role: 'system', content: buildSystemPrompt(forceAnswer) },
     ...(toolsEnabled ? fewShot() : []),
     ...recent
   ];
   const last = msgs[msgs.length - 1];
-  if (isQwen3(currentModel) && !thinkingEnabled && last?.role === 'user') {
+  const skipThink = forceAnswer || !thinkingEnabled;
+  if (isQwen3(currentModel) && skipThink && last?.role === 'user') {
     if (typeof last.content === 'string') last.content += ' /no_think';
     else last.content = last.content.map(p => p.type === 'text' ? { ...p, text: p.text + ' /no_think' } : p);
   }
@@ -935,30 +1069,58 @@ function buildMessages() {
 }
 
 /* ============================================================
-   Generation. Tokens are painted at most once per animation frame.
+   Generation
    ============================================================ */
+function thinkingTooLong(raw) {
+  const m = raw.match(/<think>([\s\S]*)$/);
+  return !!m && !m[1].includes('</think>') && m[1].length > THINK_LIMIT;
+}
+
 async function streamOnce(seg) {
-  const stream = await engine.chat.completions.create({
-    messages: buildMessages(),
-    stream: true,
-    temperature: 0.6,
-    top_p: 0.95,
-    max_tokens: 2048,
-  });
   let raw = '';
   let frame = 0;
+  let cut = false;
   const paint = () => { frame = 0; renderSegment(seg, raw, true); scrollIfNearBottom(); };
-  for await (const chunk of stream) {
-    if (stopRequested) break;
-    const delta = chunk.choices?.[0]?.delta?.content;
-    if (!delta) continue;
-    removePending(seg);
-    raw += delta;
-    if (!frame) frame = requestAnimationFrame(paint);
+
+  const pump = async messages => {
+    const stream = await engine.chat.completions.create({
+      messages, stream: true, temperature: 0.6, top_p: 0.95, max_tokens: 2048,
+    });
+    for await (const chunk of stream) {
+      if (stopRequested) break;
+      const delta = chunk.choices?.[0]?.delta?.content;
+      if (!delta) continue;
+      removePending(seg);
+      raw += delta;
+      if (!frame) frame = requestAnimationFrame(paint);
+      if (thinkingTooLong(raw)) { cut = true; break; }
+    }
+  };
+
+  await pump(buildMessages(false));
+
+  // The model is stuck in its reasoning: stop it, close the think block, and get a direct answer
+  if (cut && !stopRequested) {
+    try { engine.interruptGenerate(); } catch {}
+    await sleep(60);
+    raw += '\n</think>\n\n';
+    await pump(buildMessages(true));
   }
+
   if (frame) cancelAnimationFrame(frame);
   if (stopRequested) { try { engine.interruptGenerate(); } catch {} }
   return raw;
+}
+
+/* Store a tool call and its result in the chat history so the model sees them next turn */
+function pushToolExchange(call, result) {
+  const args = JSON.stringify(call.args);
+  active.convo.push({ role: 'assistant', content: `<tool_call>${call.name}${args}</tool_call>` });
+  active.convo.push({
+    role: 'user',
+    content: `${TOOL_PREFIX}${call.name}(${args}):\n${result.slice(0, RESULT_LIMIT)}\n\n` +
+             `Answer the user's question using these results. Name the sources. If the results do not contain the answer, say so.`
+  });
 }
 
 async function sendMessage() {
@@ -982,25 +1144,29 @@ async function sendMessage() {
   updateButtons();
 
   const wrapper = addAiWrapper();
-  // The loader appears immediately on send
-  let seg = createSegment(wrapper, toolsEnabled && text && needsFreshInfo(text) ? 'Searching' : 'Thinking');
+  let seg = createSegment(wrapper, 'Thinking');
 
   try {
-    // Automatic search for current information: the app runs it, not the model
-    if (toolsEnabled && text && !image && needsFreshInfo(text)) {
-      const call = { name: 'web_search', args: { query: buildSearchQuery(text) } };
-      const box = addToolBox(wrapper, call);
-      const result = await webSearch(call.args.query);
-      box.setResult(result);
-      removePending(seg);
-      seg.el.remove();
+    const math = toolsEnabled && text && !image ? quickMath(text) : null;
+    const fresh = !math && toolsEnabled && text && !image && needsFreshInfo(text);
 
-      active.convo.push({ role: 'assistant', content: `<tool_call>web_search{"query": ${JSON.stringify(call.args.query)}}</tool_call>` });
-      active.convo.push({
-        role: 'user',
-        content: `${TOOL_PREFIX}web_search({"query": ${JSON.stringify(call.args.query)}}):\n${result.slice(0, MODEL_RESULT_LIMIT)}\n\n` +
-                 `Answer the user's question using these results. Name the sources. If the results do not contain the answer, say so.`
-      });
+    if (math) {
+      seg.el.remove();
+      const call = { name: 'calculate', args: { expression: math } };
+      const box = addToolBox(wrapper, call);
+      const result = calculate(math);
+      box.setResult(result);
+      pushToolExchange(call, result);
+      if (stopRequested) throw new Error('Stopped');
+      seg = createSegment(wrapper, 'Answering');
+    } else if (fresh) {
+      seg.el.remove();
+      const query = buildSearchQuery(text);
+      const call = { name: 'web_search', args: { query } };
+      const box = addToolBox(wrapper, call);
+      const result = await runTool(call, step => box.setTitle(step));
+      box.setResult(result);
+      pushToolExchange(call, result);
       if (stopRequested) throw new Error('Stopped');
       seg = createSegment(wrapper, 'Reading results');
     }
@@ -1023,11 +1189,11 @@ async function sendMessage() {
       for (const call of usable) {
         if (stopRequested) break;
         const box = addToolBox(wrapper, call);
-        const result = await runTool(call);
+        const result = await runTool(call, step => box.setTitle(step));
         box.setResult(result);
         active.convo.push({
           role: 'user',
-          content: `${TOOL_PREFIX}${call.name}(${JSON.stringify(call.args)}):\n${result.slice(0, MODEL_RESULT_LIMIT)}\n\n` +
+          content: `${TOOL_PREFIX}${call.name}(${JSON.stringify(call.args)}):\n${result.slice(0, RESULT_LIMIT)}\n\n` +
                    `Answer the user's question using these results. Name the sources.`
         });
       }
