@@ -44,15 +44,16 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .title-row { display: flex; align-items: center; gap: 10px; }
 .title { font-size: 1.15rem; font-weight: 650; white-space: nowrap; }
 #status { font-size: .82rem; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
-.row { display: flex; gap: 8px; flex-wrap: wrap; }
-.model-field { flex: 1; min-width: 200px; display: flex; gap: 8px; }
-.field { flex: 1; min-width: 200px; }
-input.txt { width: 100%; padding: .7rem .9rem; background: rgba(255,255,255,.12); border: 1px solid var(--border); border-radius: 14px; color: #fff; font: inherit; font-size: .9rem; outline: none; }
-input.txt::placeholder { color: rgba(255,255,255,.55); }
-input.txt:focus { background: rgba(255,255,255,.2); box-shadow: 0 0 0 3px var(--glow); }
-#model-input { flex: 1; min-width: 0; padding: .7rem .9rem; background: rgba(255,255,255,.12); border: 1px solid var(--border); border-radius: 14px; color: #fff; font: inherit; font-size: .9rem; outline: none; }
-#model-input::placeholder { color: rgba(255,255,255,.55); }
-#model-input:focus { background: rgba(255,255,255,.2); box-shadow: 0 0 0 3px var(--glow); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.grow-field { flex: 1; min-width: 200px; display: flex; gap: 8px; }
+.field-input, select.sel { flex: 1; min-width: 0; padding: .68rem .9rem; background: rgba(255,255,255,.12); border: 1px solid var(--border); border-radius: 14px; color: #fff; font: inherit; font-size: .9rem; outline: none; }
+select.sel option, select.sel optgroup { background: #2e2466; color: #fff; }
+.field-input::placeholder { color: rgba(255,255,255,.55); }
+.field-input:focus, select.sel:focus { background: rgba(255,255,255,.2); box-shadow: 0 0 0 3px var(--glow); }
+details.custom { width: 100%; border: 1px solid rgba(255,255,255,.2); border-radius: 14px; padding: 8px 12px; background: rgba(0,0,0,.12); }
+details.custom summary { cursor: pointer; font-size: .82rem; color: var(--muted); }
+details.custom .form { display: grid; gap: 8px; margin-top: 10px; }
+details.custom .note { font-size: .74rem; color: rgba(255,255,255,.6); line-height: 1.5; }
 .toggles { display: flex; gap: 8px; flex-wrap: wrap; }
 .toggle { padding: .38rem .9rem; border-radius: 999px; font-size: .78rem; font-weight: 500; background: rgba(255,255,255,.12); border: 1px solid var(--border); color: var(--muted); cursor: pointer; user-select: none; }
 .toggle:hover { background: rgba(255,255,255,.22); color: #fff; }
@@ -163,23 +164,37 @@ input.txt:focus { background: rgba(255,255,255,.2); box-shadow: 0 0 0 3px var(--
         <div id="status">Starting…</div>
       </div>
       <div class="row">
-        <div class="model-field">
-          <input id="model-input" type="text" value="Qwen3-0.6B" placeholder="Model (e.g. Qwen3-0.6B, Qwen3-4B)">
+        <div class="grow-field">
+          <select class="sel" id="model-select" title="Choose a model"></select>
           <button class="btn primary" id="load-btn">Load</button>
         </div>
+        <button class="btn" id="prev-btn" title="Switch back to the previous model">↩ Previous</button>
         <button class="btn danger" id="reset-btn">🔄 Reset</button>
       </div>
-      <div class="row">
-        <div class="field">
-          <input id="api-key" class="txt" type="password" placeholder="Optional: Brave Search API key (improves search)" autocomplete="off">
+      <details class="custom" id="custom-box">
+        <summary>Add a custom MLC model (for example an MLC build of Qwen 3.5 0.8B Uncensored or a Heretic model)</summary>
+        <div class="form">
+          <input class="field-input" id="c-name" placeholder="Display name, e.g. Qwen 3.5 0.8B Uncensored">
+          <input class="field-input" id="c-id" placeholder="Model ID, e.g. Qwen3.5-0.8B-Uncensored-q4f16_1-MLC">
+          <input class="field-input" id="c-url" placeholder="Weights URL (the MLC model folder, e.g. https://huggingface.co/you/Model-MLC)">
+          <input class="field-input" id="c-lib" placeholder="Compiled WebGPU library URL (.wasm)">
+          <label class="toggles" style="gap:6px"><input type="checkbox" id="c-vision"> Vision model (accepts images)</label>
+          <div class="row">
+            <button class="btn primary" id="c-save">Save and load</button>
+            <button class="btn" id="c-remove">Remove selected custom model</button>
+          </div>
+          <div class="note">Hugging Face repos that contain safetensors or GGUF files cannot run in the browser directly. They must first be converted to MLC format with MLC-LLM and the compiled .wasm library hosted somewhere public.</div>
         </div>
-      </div>
+      </details>
       <div class="toggles">
         <div class="toggle" id="toggle-tools">🧰 Tools &amp; search</div>
         <div class="toggle" id="toggle-thinking">💭 Thinking</div>
       </div>
+      <div class="row">
+        <input class="field-input" id="api-key" type="password" placeholder="Optional: Brave Search API key (improves search)" autocomplete="off">
+      </div>
       <div class="progress" id="progress-bar"><div id="progress-fill"></div></div>
-      <div class="hint">Time, date and arithmetic are answered by the app. Current or factual questions are searched and checked for relevance. If nothing relevant is found, the app says so and lists the sources it checked. Enter sends, Shift+Enter adds a line, Esc stops, Ctrl/Cmd+K starts a new chat.</div>
+      <div class="hint">Time, date and arithmetic are answered by the app. Current or factual questions are searched and checked for relevance. Enter sends, Shift+Enter adds a line, Esc stops, Ctrl/Cmd+K starts a new chat.</div>
     </header>
 
     <main class="chat" id="chat">
@@ -207,7 +222,7 @@ input.txt:focus { background: rgba(255,255,255,.2); box-shadow: 0 0 0 3px var(--
 <div class="modal-overlay" id="reset-modal">
   <div class="modal glass">
     <h3>🔄 Reset everything?</h3>
-    <p>This unloads the model and deletes all saved chats. It can't be undone.</p>
+    <p>This unloads the model and deletes all saved chats and custom models. It can't be undone.</p>
     <div class="modal-buttons">
       <button class="btn" id="cancel-reset">Cancel</button>
       <button class="btn danger" id="confirm-reset">Reset</button>
@@ -221,43 +236,6 @@ import { CreateMLCEngine, CreateWebWorkerMLCEngine, prebuiltAppConfig } from "ht
 /* ============================================================
    Basics
    ============================================================ */
-const DEFAULT_MODEL = 'Qwen3-0.6B-q4f16_1-MLC';
-const MODEL_ALIASES = {
-  'qwen3-0.6b': 'Qwen3-0.6B-q4f16_1-MLC', 'qwen3-0.5b': 'Qwen3-0.6B-q4f16_1-MLC',
-  'qwen3-1.7b': 'Qwen3-1.7B-q4f16_1-MLC', 'qwen3-4b': 'Qwen3-4B-q4f16_1-MLC',
-  'qwen3-8b': 'Qwen3-8B-q4f16_1-MLC', 'qwen3.5-2b': 'Qwen3.5-2B-q4f16_1-MLC',
-  'qwen2.5-0.5b': 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC', 'qwen2.5-1.5b': 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',
-  'qwen2.5-3b': 'Qwen2.5-3B-Instruct-q4f16_1-MLC', 'qwen2.5-7b': 'Qwen2.5-7B-Instruct-q4f16_1-MLC',
-  'llama-3.2-1b': 'Llama-3.2-1B-Instruct-q4f16_1-MLC', 'llama-3.2-3b': 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
-  'llama-3.1-8b': 'Llama-3.1-8B-Instruct-q4f16_1-MLC',
-  'gemma-2-2b': 'gemma-2-2b-it-q4f16_1-MLC', 'gemma-3-1b': 'gemma-3-1b-it-q4f16_1-MLC',
-  'gemma-3-4b': 'gemma-3-4b-it-q4f16_1-MLC',
-  'phi-3.5-mini': 'Phi-3.5-mini-instruct-q4f16_1-MLC', 'phi-3.5-vision': 'Phi-3.5-vision-instruct-q4f16_1-MLC',
-  'phi-4-mini': 'Phi-4-mini-instruct-q4f16_1-MLC',
-  'deepseek-r1-7b': 'DeepSeek-R1-Distill-Qwen-7B-q4f16_1-MLC',
-};
-
-function resolveModelId(input) {
-  if (!input || !input.trim()) return null;
-  const trimmed = input.trim();
-  let baseName = trimmed;
-  if (trimmed.includes('huggingface.co/')) baseName = trimmed.split('/').pop();
-  else if (trimmed.includes('/') && !trimmed.startsWith('http')) baseName = trimmed.split('/')[1];
-  if (baseName.endsWith('-MLC')) return baseName;
-  const lower = baseName.toLowerCase();
-  if (MODEL_ALIASES[lower]) return MODEL_ALIASES[lower];
-  const allIds = prebuiltAppConfig.model_list.map(m => m.model_id);
-  const exact = allIds.find(id => id.toLowerCase() === lower);
-  if (exact) return exact;
-  const fuzzy = allIds.find(id => id.toLowerCase().includes(lower));
-  if (fuzzy) return fuzzy;
-  if (!/q[034]f/.test(lower)) return baseName + '-q4f16_1-MLC';
-  if (!lower.endsWith('-mlc')) return baseName + '-MLC';
-  return baseName;
-}
-
-const isVisionModel = id => /vision|gemma-3|-vl|qwen2-vl|llava/i.test(id || '');
-const isQwen3 = id => /qwen3/i.test(id || '');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const enc = encodeURIComponent;
 const cleanText = s => (s || '').replace(/\s+/g, ' ').trim();
@@ -270,8 +248,9 @@ const el = (tag, cls, text) => {
   if (text != null) e.textContent = text;
   return e;
 };
+const readJSON = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
+const writeJSON = (key, v) => { try { localStorage.setItem(key, JSON.stringify(v)); } catch {} };
 
-/* Escape first, then add formatting, so model output can never inject HTML */
 const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function md(text) {
   return esc(text || '')
@@ -287,141 +266,133 @@ function md(text) {
 }
 
 /* ============================================================
-   TIME AND DATE: answered by code
+   MODELS
+   Prebuilt models come from WebLLM's own list. Custom models are
+   MLC builds you add yourself. Quick switch remembers the previous model.
    ============================================================ */
-const PLACES = [
-  [['uk', 'united kingdom', 'britain', 'great britain', 'england', 'scotland', 'wales', 'london'], 'Europe/London', 'the UK'],
-  [['ireland', 'dublin'], 'Europe/Dublin', 'Ireland'],
-  [['france', 'paris'], 'Europe/Paris', 'France'],
-  [['germany', 'berlin'], 'Europe/Berlin', 'Germany'],
-  [['spain', 'madrid'], 'Europe/Madrid', 'Spain'],
-  [['italy', 'rome'], 'Europe/Rome', 'Italy'],
-  [['netherlands', 'amsterdam'], 'Europe/Amsterdam', 'the Netherlands'],
-  [['greece', 'athens'], 'Europe/Athens', 'Greece'],
-  [['turkey', 'istanbul'], 'Europe/Istanbul', 'Turkey'],
-  [['russia', 'moscow'], 'Europe/Moscow', 'Russia'],
-  [['uae', 'dubai'], 'Asia/Dubai', 'Dubai'],
-  [['india', 'delhi', 'mumbai'], 'Asia/Kolkata', 'India'],
-  [['pakistan', 'karachi'], 'Asia/Karachi', 'Pakistan'],
-  [['china', 'beijing', 'shanghai'], 'Asia/Shanghai', 'China'],
-  [['hong kong'], 'Asia/Hong_Kong', 'Hong Kong'],
-  [['singapore'], 'Asia/Singapore', 'Singapore'],
-  [['japan', 'tokyo'], 'Asia/Tokyo', 'Japan'],
-  [['south korea', 'korea', 'seoul'], 'Asia/Seoul', 'South Korea'],
-  [['australia', 'sydney'], 'Australia/Sydney', 'Sydney, Australia'],
-  [['melbourne'], 'Australia/Melbourne', 'Melbourne'],
-  [['perth'], 'Australia/Perth', 'Perth'],
-  [['new zealand', 'auckland'], 'Pacific/Auckland', 'New Zealand'],
-  [['nigeria', 'lagos'], 'Africa/Lagos', 'Nigeria'],
-  [['south africa', 'johannesburg'], 'Africa/Johannesburg', 'South Africa'],
-  [['egypt', 'cairo'], 'Africa/Cairo', 'Egypt'],
-  [['kenya', 'nairobi'], 'Africa/Nairobi', 'Kenya'],
-  [['brazil', 'sao paulo'], 'America/Sao_Paulo', 'Brazil'],
-  [['argentina', 'buenos aires'], 'America/Argentina/Buenos_Aires', 'Argentina'],
-  [['mexico', 'mexico city'], 'America/Mexico_City', 'Mexico'],
-  [['canada', 'toronto'], 'America/Toronto', 'Eastern Canada'],
-  [['vancouver'], 'America/Vancouver', 'Vancouver'],
-  [['usa', 'united states', 'america', 'new york'], 'America/New_York', 'the US (Eastern)'],
-  [['los angeles', 'california', 'las vegas'], 'America/Los_Angeles', 'the US (Pacific)'],
-  [['chicago'], 'America/Chicago', 'Chicago'],
-  [['hawaii'], 'Pacific/Honolulu', 'Hawaii'],
-];
-const PLACE_INDEX = PLACES.flatMap(([aliases, tz, name]) => aliases.map(a => ({ a, tz, name })))
-  .sort((x, y) => y.a.length - x.a.length);
-const ZONES = (typeof Intl.supportedValuesOf === 'function') ? Intl.supportedValuesOf('timeZone') : [];
+const PREBUILT_IDS = prebuiltAppConfig.model_list.map(m => m.model_id);
+const FAMILY_RE = /qwen|llama|gemma|phi|smol|deepseek|mistral/i;
+const isVisionModel = id => /vision|gemma-3|-vl|qwen2-vl|llava/i.test(id || '');
+const isQwen3 = id => /qwen3/i.test(id || '');
 
-function findPlace(low) {
-  for (const p of PLACE_INDEX) {
-    if (new RegExp(`\\b${escRe(p.a)}\\b`).test(low)) return { tz: p.tz, name: p.name };
-  }
-  return null;
+function pickDefault() {
+  return PREBUILT_IDS.find(id => /^Qwen3\.5-0\.8B/i.test(id))
+    || PREBUILT_IDS.find(id => /^Qwen3-0\.6B/i.test(id))
+    || PREBUILT_IDS.find(id => /qwen/i.test(id))
+    || PREBUILT_IDS[0];
 }
-function findZone(low) {
-  for (const z of ZONES) {
-    const city = z.split('/').pop().replace(/_/g, ' ').toLowerCase();
-    if (city.length > 2 && new RegExp(`\\b${escRe(city)}\\b`).test(low)) {
-      return { tz: z, name: city.replace(/\b\w/g, c => c.toUpperCase()) };
-    }
-  }
-  return null;
+const DEFAULT_SPEC = { kind: 'prebuilt', id: pickDefault() };
+
+const KEY_MODEL = 'webllm-model-spec-v3';
+const KEY_PREV = 'webllm-model-prev-v3';
+const KEY_CUSTOM = 'webllm-custom-models-v3';
+
+let customModels = readJSON(KEY_CUSTOM, []);
+
+/* A spec is { kind:'prebuilt', id } or { kind:'custom', index } */
+const specKey = s => s.kind === 'custom' ? `c:${s.index}` : `p:${s.id}`;
+function specFromKey(k) {
+  if (k.startsWith('c:')) return { kind: 'custom', index: +k.slice(2) };
+  return { kind: 'prebuilt', id: k.slice(2) };
 }
-function validZone(z) {
-  try { new Intl.DateTimeFormat('en-GB', { timeZone: z }); return true; } catch { return false; }
+function specName(s) {
+  if (s.kind === 'custom') return customModels[s.index]?.name || 'Custom model';
+  return s.id;
 }
-function resolveTz(s) {
-  if (!s || !s.trim()) return null;
-  const t = s.trim();
-  if (validZone(t)) return { tz: t, name: t };
-  const low = t.toLowerCase();
-  return findPlace(low) || findZone(low);
+function specModelId(s) {
+  if (s.kind === 'custom') return customModels[s.index]?.model_id;
+  return s.id;
+}
+function specIsVision(s) {
+  if (s.kind === 'custom') return !!customModels[s.index]?.vision || isVisionModel(customModels[s.index]?.model_id);
+  return isVisionModel(s.id);
+}
+function specEngineOpts(s) {
+  if (s.kind !== 'custom') return {};
+  const c = customModels[s.index];
+  return { appConfig: { model_list: [{ model: c.url, model_id: c.model_id, model_lib: c.lib }] } };
+}
+function specValid(s) {
+  if (s.kind === 'custom') return !!customModels[s.index];
+  return PREBUILT_IDS.includes(s.id);
 }
 
-const TIME_RE = /\b(what(?:'s| is)?(?: the)? (?:current |local |exact )?(?:time|date|day)|what time|what day|time (?:is it|now)|current time|local time|date today|today'?s date|what date)\b/i;
-function timeQuery(text) {
-  if (!TIME_RE.test(text)) return null;
-  const low = text.toLowerCase();
-  const found = findPlace(low) || findZone(low);
-  if (found) return found;
-  const m = low.match(/\b(?:in|at|for)\s+(?:the\s+)?([a-z][a-z .'-]{1,40}?)\s*[?.!]*$/);
-  if (m && !/\b(it|now|today|this)\b/.test(m[1])) return { unknown: m[1].trim() };
-  return { tz: null };
+let currentSpec = null;
+let spec = readJSON(KEY_MODEL, null);
+if (!spec || !specValid(spec)) spec = DEFAULT_SPEC;
+let prevSpec = readJSON(KEY_PREV, null);
+if (prevSpec && !specValid(prevSpec)) prevSpec = null;
+
+const modelSelect = el('select', 'sel');
+modelSelect.id = 'model-select';
+function renderModelSelect() {
+  const sel = document.getElementById('model-select');
+  sel.innerHTML = '';
+  const pre = document.createElement('optgroup');
+  pre.label = 'Built in (WebLLM prebuilt)';
+  const family = PREBUILT_IDS.filter(id => FAMILY_RE.test(id));
+  const list = family.length ? family : PREBUILT_IDS;
+  if (!list.includes(DEFAULT_SPEC.id)) list.unshift(DEFAULT_SPEC.id);
+  for (const id of list) {
+    const o = el('option', null, id + (id === DEFAULT_SPEC.id ? '  (default)' : ''));
+    o.value = `p:${id}`;
+    pre.appendChild(o);
+  }
+  sel.appendChild(pre);
+  if (customModels.length) {
+    const cg = document.createElement('optgroup');
+    cg.label = 'Custom (your MLC builds)';
+    customModels.forEach((c, i) => {
+      const o = el('option', null, `${c.name} (custom)`);
+      o.value = `c:${i}`;
+      cg.appendChild(o);
+    });
+    sel.appendChild(cg);
+  }
+  sel.value = specKey(spec);
+  if (!sel.value) sel.selectedIndex = 0;
+  updatePrevButton();
 }
-const fmtTime = (d, tz) => d.toLocaleTimeString('en-GB', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });
-const fmtDate = (d, tz) => d.toLocaleDateString('en-GB', { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-function timeAnswer(q) {
-  const now = new Date();
-  if (q.unknown) return `I could not find a time zone for "${q.unknown}". Try a nearby major city, for example "what time is it in London".`;
-  if (q.tz) return `It is **${fmtTime(now, q.tz)}** on ${fmtDate(now, q.tz)} in ${q.name} (time zone ${q.tz}).`;
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return `It is **${fmtTime(now, tz)}** on ${fmtDate(now, tz)} on this device (time zone ${tz}).`;
+function updatePrevButton() {
+  const b = document.getElementById('prev-btn');
+  b.disabled = !prevSpec || (currentSpec && specKey(prevSpec) === specKey(currentSpec));
+  b.title = prevSpec ? `Switch back to ${specName(prevSpec)}` : 'No previous model yet';
 }
 
 /* ============================================================
-   ARITHMETIC: answered by code
+   Engine: worker first (keeps the page responsive), main thread as fallback
    ============================================================ */
-function quickMath(text) {
-  const raw = text.toLowerCase().replace(/[?=]/g, ' ').trim();
-  const pct = raw.match(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)/);
-  if (pct) return { expr: `(${pct[1]}/100)*${pct[2]}`, label: `${pct[1]}% of ${pct[2]}` };
-  let s = raw.replace(/^(what(?:'s| is)|calculate|compute|work out|solve|evaluate)\s+/, '')
-    .replace(/\bsquare root of\s+([\d.]+)/g, 'sqrt($1)')
-    .replace(/\bplus\b/g, '+').replace(/\bminus\b/g, '-')
-    .replace(/\b(times|multiplied by|x)\b/g, '*').replace(/\bdivided by\b/g, '/')
-    .replace(/\s+/g, ' ').trim();
-  const probe = s.replace(/sqrt\(/g, '(');
-  if (!/\d/.test(s)) return null;
-  if (!/^[\d\s.+\-*/()^]+$/.test(probe)) return null;
-  if (!/[+\-*/^]|sqrt/.test(s)) return null;
-  return { expr: s, label: s.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/\s+/g, ' ').trim() };
+let engine = null, worker = null;
+function getWorker() {
+  if (worker) return worker;
+  const src = `
+    import { WebWorkerMLCEngineHandler } from "https://esm.run/@mlc-ai/web-llm";
+    const handler = new WebWorkerMLCEngineHandler();
+    self.onmessage = msg => handler.onmessage(msg);
+  `;
+  worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })), { type: 'module' });
+  return worker;
 }
-function evaluate(expr) {
-  const js = expr.replace(/\bsqrt\(/g, 'Math.sqrt(').replace(/\^/g, '**');
-  const probe = js.replace(/Math\.sqrt/g, '0');
-  if (!/^[\d\s.+\-*/()]+$/.test(probe)) return null;
+async function createEngine(s, onProgress) {
+  const id = specModelId(s);
+  const extra = specEngineOpts(s);
   try {
-    const v = Function(`"use strict"; return (${js});`)();
-    return Number.isFinite(v) ? v : null;
-  } catch { return null; }
+    return await CreateWebWorkerMLCEngine(getWorker(), id, { initProgressCallback: onProgress, ...extra });
+  } catch (err) {
+    console.warn('Worker engine failed, using main thread:', err);
+    try { worker?.terminate(); } catch {}
+    worker = null;
+    return await CreateMLCEngine(id, { initProgressCallback: onProgress, ...extra });
+  }
 }
-const fmtNum = v => Number(v.toPrecision(12)).toLocaleString('en-GB', { maximumFractionDigits: 10 });
-
-/* ============================================================
-   Routing: decided in code
-   ============================================================ */
-const FRESH_RE = /\b(current|currently|latest|today|tonight|tomorrow|right now|recent|recently|newest|this (?:week|month|year)|price|prices|cost|net worth|worth|salary|income|news|headlines|score|scores|weather|forecast|stock|shares|exchange rate|who is the|who's the|who runs|ceo|president|prime minister|chancellor|king|election|released|release date|just announced|as of|last (?:week|month|year)|still|now|best|top\s*\d+|top ten|ranking|rankings|rank|list of|compare|versus|vs|cheapest|worst|most popular|population|how many|how much|founded|born|died|age|202\d|203\d|phone|phones|laptop|laptops|car|cars|model|models|app|apps|game|games|movie|movies|film|films|album|song|restaurant|restaurants|hotel|hotels|flight|flights|iphone|iphones|android|buy|should i)\b/i;
-const CREATIVE_RE = /\b(write|poem|story|joke|translate|rewrite|summari[sz]e (?:this|the following)|code|function|script|debug|fix my|draft|email|essay|lyrics|recipe|help me|explain (?:how|why)|you|your|yourself|hello|hi|hey|thanks|thank you)\b/i;
-const UNSURE_RE = /(don't|do not|can't|cannot|unable to|not able to) (?:have|access|know|browse|verify|confirm|check)|real-time|up-to-date|as of my|knowledge cutoff|not sure|not certain|i am unable|i'm unable/i;
-const ANSWER_UNSURE_RE = /could not (?:confirm|verify|find)|cannot (?:confirm|verify)|not able to (?:confirm|verify)|no (?:reliable|relevant) (?:information|answer)/i;
-
-function shouldSearch(text) {
-  const t = text.trim();
-  if (FRESH_RE.test(t)) return true;
-  if (CREATIVE_RE.test(t)) return false;
-  return /^(who|what|which|where|when|how|is|are|does|do|did|was|were|can|why|should)\b/i.test(t) && t.split(/\s+/).length >= 3;
+async function checkWebGPU() {
+  if (!navigator.gpu) throw new Error('WebGPU is not available. Use a recent Chrome or Edge browser.');
+  const adapter = await navigator.gpu.requestAdapter();
+  if (!adapter) throw new Error('No WebGPU adapter found on this device.');
 }
 
 /* ============================================================
-   Network
+   Search and tools
    ============================================================ */
 const PROXY = [
   u => `https://api.allorigins.win/raw?url=${enc(u)}`,
@@ -452,7 +423,6 @@ async function pageText(url) {
   doc.querySelectorAll('p,li,h1,h2,h3,h4,tr,div,br,section,article').forEach(e => e.before('\n'));
   return doc.body?.textContent || '';
 }
-
 function unwrapBing(href) {
   try {
     const u = new URL(href, 'https://www.bing.com');
@@ -465,33 +435,23 @@ function unwrapBing(href) {
   } catch { return href; }
 }
 function unwrapDdg(href) {
-  try { const u = new URL(href, 'https://duckduckgo.com'); return u.searchParams.get('uddg') || u.href; }
-  catch { return href; }
+  try { const u = new URL(href, 'https://duckduckgo.com'); return u.searchParams.get('uddg') || u.href; } catch { return href; }
 }
 function unwrapGoogle(href) {
-  try { const u = new URL(href, 'https://www.google.com'); return u.searchParams.get('q') || u.href; }
-  catch { return href; }
+  try { const u = new URL(href, 'https://www.google.com'); return u.searchParams.get('q') || u.href; } catch { return href; }
 }
 
-/* ============================================================
-   Search sources. Optional Brave API first when a key is set,
-   then scraped sources in parallel batches of three.
-   ============================================================ */
 const SEARX = ['https://searx.be', 'https://search.sapti.me', 'https://priv.au', 'https://searx.tiekoetter.com', 'https://search.bus-hit.me'];
+const API_KEY_STORE = 'webllm-brave-key';
+const getApiKey = () => { try { return (localStorage.getItem(API_KEY_STORE) || '').trim(); } catch { return ''; } };
 
 const BRAVE_API = {
   name: 'Brave API',
   run: async q => {
-    const key = getApiKey();
-    const d = await getJson(`https://api.search.brave.com/res/v1/web/search?q=${enc(q)}&count=10`, 9000, { 'X-Subscription-Token': key });
-    return (d.web?.results || []).map(x => ({
-      title: cleanText(x.title),
-      url: x.url,
-      snippet: cleanText((x.description || '').replace(/<[^>]*>/g, '')),
-    }));
+    const d = await getJson(`https://api.search.brave.com/res/v1/web/search?q=${enc(q)}&count=10`, 9000, { 'X-Subscription-Token': getApiKey() });
+    return (d.web?.results || []).map(x => ({ title: cleanText(x.title), url: x.url, snippet: cleanText((x.description || '').replace(/<[^>]*>/g, '')) }));
   },
 };
-
 const SCRAPED = [
   {
     name: 'DuckDuckGo',
@@ -569,8 +529,6 @@ const SCRAPED = [
     },
   },
 ];
-
-const getApiKey = () => { try { return (localStorage.getItem(API_KEY_STORE) || '').trim(); } catch { return ''; } };
 const activeSources = () => (getApiKey() ? [BRAVE_API, ...SCRAPED] : SCRAPED);
 
 function dedupe(results) {
@@ -582,15 +540,11 @@ function dedupe(results) {
   });
 }
 
-/* ============================================================
-   Keywords
-   ============================================================ */
 const STOP = new Set(('the a an of in on at to for and or is are was were be by with from what whats how who when where which ' +
   'does do did its it this that me my i tell please give current currently latest now today right can you about will much ' +
   'many could should would there their they he she ok okay hey hi thanks know want need look find show why buy when ' +
   'been has have had released release just any some more most').split(' '));
 
-/* Content words only. Plurals are reduced so "phones" matches "phone". */
 function keywords(q) {
   const words = q.toLowerCase().replace(/'s\b/g, '').replace(/[^a-z0-9.\s-]/g, ' ').split(/\s+/)
     .map(w => w.replace(/^[.\-]+|[.\-]+$/g, ''))
@@ -599,15 +553,9 @@ function keywords(q) {
   const terms = [...new Set(words)];
   return { terms, query: terms.join(' ') };
 }
-
-/* How many of the terms a piece of text contains */
-const hitCount = (text, terms) => {
-  const low = text.toLowerCase();
-  return terms.filter(t => low.includes(t)).length;
-};
+const hitCount = (text, terms) => { const low = text.toLowerCase(); return terms.filter(t => low.includes(t)).length; };
 const needFor = (n, ratio) => Math.max(1, Math.ceil(n * ratio));
 
-/* A search result is kept only if its title, address or snippet covers most of the question */
 function relevantResults(results, terms) {
   const need = needFor(terms.length, 0.5);
   return results
@@ -636,9 +584,6 @@ async function searchWeb(query, terms, onStep = () => {}) {
   return { results: [], tried };
 }
 
-/* ============================================================
-   Wikipedia: search, then read the article
-   ============================================================ */
 async function wikiPages(query) {
   const d = await getJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${enc(query)}&srlimit=4&format=json&origin=*`, 8000);
   const titles = (d.query?.search || []).map(x => x.title);
@@ -646,24 +591,12 @@ async function wikiPages(query) {
   const ex = await getJson(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&redirects=1&format=json&origin=*&titles=${enc(titles.join('|'))}`, 10000);
   return Object.values(ex.query?.pages || {})
     .filter(p => p.extract && p.extract.length > 200)
-    .map(p => ({
-      title: p.title,
-      url: `https://en.wikipedia.org/wiki/${enc(p.title.replace(/ /g, '_'))}`,
-      text: p.extract,
-    }));
+    .map(p => ({ title: p.title, url: `https://en.wikipedia.org/wiki/${enc(p.title.replace(/ /g, '_'))}`, text: p.extract }));
 }
 
-/* ============================================================
-   EVIDENCE: cleaning and strict sentence picking
-   ============================================================ */
 function cleanTitle(t) {
-  return cleanText((t || '')
-    .replace(/^\s*Title:\s*/i, '')
-    .split(/\s+[|–—]\s+|\s+-\s+/)[0]
-    .replace(/\s*\((Wikipedia|wiki)\)\s*$/i, ''));
+  return cleanText((t || '').replace(/^\s*Title:\s*/i, '').split(/\s+[|–—]\s+|\s+-\s+/)[0].replace(/\s*\((Wikipedia|wiki)\)\s*$/i, ''));
 }
-
-/* Removes citation markers, wiki reference notes, links and URLs */
 function cleanEvidence(s) {
   return (s || '')
     .replace(/\[([^\]\n]{1,200})\]\([^)\n]*\)/g, '$1')
@@ -676,14 +609,12 @@ function cleanEvidence(s) {
     .replace(/\s+/g, ' ')
     .trim();
 }
-
 function passages(text) {
   const out = [], seen = new Set();
   for (const raw of (text || '').split(/\n+|(?<=[.!?])\s+/)) {
     const s = cleanEvidence(raw);
     if (s.length < 35 || s.length > 450) continue;
-    const letters = (s.match(/[a-z]/gi) || []).length;
-    if (letters / s.length < 0.6) continue;
+    if ((s.match(/[a-z]/gi) || []).length / s.length < 0.6) continue;
     if ((s.match(/\|/g) || []).length > 1) continue;
     const key = s.toLowerCase();
     if (seen.has(key)) continue;
@@ -692,8 +623,6 @@ function passages(text) {
   }
   return out;
 }
-
-/* A sentence is used only if it contains most of the question's terms */
 function pickSentences(text, terms, max = 3) {
   if (!terms.length) return [];
   const need = needFor(terms.length, 0.6);
@@ -714,24 +643,17 @@ function pickSentences(text, terms, max = 3) {
     .slice(0, max)
     .map(x => x.s);
 }
-
 async function readResult(r, terms) {
   let ex = [];
   try { ex = pickSentences(await withTimeout(pageText(r.url), 10000), terms, 3); } catch {}
-  if (!ex.length && r.snippet) {
-    ex = passages(r.snippet).filter(s => hitCount(s, terms) >= needFor(terms.length, 0.6)).slice(0, 2);
-  }
+  if (!ex.length && r.snippet) ex = passages(r.snippet).filter(s => hitCount(s, terms) >= needFor(terms.length, 0.6)).slice(0, 2);
   return { title: cleanTitle(r.title), url: r.url, excerpts: ex };
 }
 
-/* ============================================================
-   Research: Wikipedia first, then the web. Only relevant items are kept.
-   ============================================================ */
 async function research(question, box) {
   const { terms, query } = keywords(question);
   const tried = [];
   if (!terms.length) return { items: [], evidence: '', tried, terms };
-
   const yearQ = /\b20\d\d\b/.test(query) ? query : `${query} ${new Date().getFullYear()}`;
   const found = [];
 
@@ -743,7 +665,6 @@ async function research(question, box) {
     tried.push(`Wikipedia ${w.title}: ${ex.length}`);
     if (ex.length) found.push({ title: `${cleanTitle(w.title)} (Wikipedia)`, url: w.url, excerpts: ex, score: ex.length + 1 });
   }
-
   for (const q of [...new Set([yearQ, query])]) {
     if (found.length >= 4) break;
     const s = await searchWeb(q, terms, step => box?.setTitle?.(step));
@@ -753,24 +674,128 @@ async function research(question, box) {
     const pages = await Promise.all(s.results.slice(0, 4).map(r => readResult(r, terms)));
     for (const p of pages) if (p.excerpts.length) found.push({ ...p, score: p.excerpts.length });
   }
-
   const seen = new Set();
   const items = found
     .sort((a, b) => b.score - a.score)
     .filter(x => !seen.has(x.url) && seen.add(x.url))
     .slice(0, 4)
     .map((x, i) => ({ ...x, n: i + 1 }));
-
   const evidence = items.length
-    ? `Search date: ${todayStr()}\n\n` + items.map(it =>
-        `[${it.n}] ${it.title}\n${it.excerpts.map(e => `- ${e.slice(0, 350)}`).join('\n')}`).join('\n\n')
+    ? `Search date: ${todayStr()}\n\n` + items.map(it => `[${it.n}] ${it.title}\n${it.excerpts.map(e => `- ${e.slice(0, 350)}`).join('\n')}`).join('\n\n')
     : '';
   return { items, evidence, tried, terms };
 }
 
-/* ============================================================
-   Other tools the model can call
-   ============================================================ */
+/* Arithmetic and time */
+const PLACES = [
+  [['uk', 'united kingdom', 'britain', 'great britain', 'england', 'scotland', 'wales', 'london'], 'Europe/London', 'the UK'],
+  [['ireland', 'dublin'], 'Europe/Dublin', 'Ireland'],
+  [['france', 'paris'], 'Europe/Paris', 'France'],
+  [['germany', 'berlin'], 'Europe/Berlin', 'Germany'],
+  [['spain', 'madrid'], 'Europe/Madrid', 'Spain'],
+  [['italy', 'rome'], 'Europe/Rome', 'Italy'],
+  [['netherlands', 'amsterdam'], 'Europe/Amsterdam', 'the Netherlands'],
+  [['greece', 'athens'], 'Europe/Athens', 'Greece'],
+  [['turkey', 'istanbul'], 'Europe/Istanbul', 'Turkey'],
+  [['russia', 'moscow'], 'Europe/Moscow', 'Russia'],
+  [['uae', 'dubai'], 'Asia/Dubai', 'Dubai'],
+  [['india', 'delhi', 'mumbai'], 'Asia/Kolkata', 'India'],
+  [['pakistan', 'karachi'], 'Asia/Karachi', 'Pakistan'],
+  [['china', 'beijing', 'shanghai'], 'Asia/Shanghai', 'China'],
+  [['hong kong'], 'Asia/Hong_Kong', 'Hong Kong'],
+  [['singapore'], 'Asia/Singapore', 'Singapore'],
+  [['japan', 'tokyo'], 'Asia/Tokyo', 'Japan'],
+  [['south korea', 'korea', 'seoul'], 'Asia/Seoul', 'South Korea'],
+  [['australia', 'sydney'], 'Australia/Sydney', 'Sydney, Australia'],
+  [['melbourne'], 'Australia/Melbourne', 'Melbourne'],
+  [['perth'], 'Australia/Perth', 'Perth'],
+  [['new zealand', 'auckland'], 'Pacific/Auckland', 'New Zealand'],
+  [['nigeria', 'lagos'], 'Africa/Lagos', 'Nigeria'],
+  [['south africa', 'johannesburg'], 'Africa/Johannesburg', 'South Africa'],
+  [['egypt', 'cairo'], 'Africa/Cairo', 'Egypt'],
+  [['kenya', 'nairobi'], 'Africa/Nairobi', 'Kenya'],
+  [['brazil', 'sao paulo'], 'America/Sao_Paulo', 'Brazil'],
+  [['argentina', 'buenos aires'], 'America/Argentina/Buenos_Aires', 'Argentina'],
+  [['mexico', 'mexico city'], 'America/Mexico_City', 'Mexico'],
+  [['canada', 'toronto'], 'America/Toronto', 'Eastern Canada'],
+  [['vancouver'], 'America/Vancouver', 'Vancouver'],
+  [['usa', 'united states', 'america', 'new york'], 'America/New_York', 'the US (Eastern)'],
+  [['los angeles', 'california', 'las vegas'], 'America/Los_Angeles', 'the US (Pacific)'],
+  [['chicago'], 'America/Chicago', 'Chicago'],
+  [['hawaii'], 'Pacific/Honolulu', 'Hawaii'],
+];
+const PLACE_INDEX = PLACES.flatMap(([aliases, tz, name]) => aliases.map(a => ({ a, tz, name }))).sort((x, y) => y.a.length - x.a.length);
+const ZONES = (typeof Intl.supportedValuesOf === 'function') ? Intl.supportedValuesOf('timeZone') : [];
+function findPlace(low) {
+  for (const p of PLACE_INDEX) if (new RegExp(`\\b${escRe(p.a)}\\b`).test(low)) return { tz: p.tz, name: p.name };
+  return null;
+}
+function findZone(low) {
+  for (const z of ZONES) {
+    const city = z.split('/').pop().replace(/_/g, ' ').toLowerCase();
+    if (city.length > 2 && new RegExp(`\\b${escRe(city)}\\b`).test(low)) return { tz: z, name: city.replace(/\b\w/g, c => c.toUpperCase()) };
+  }
+  return null;
+}
+function validZone(z) { try { new Intl.DateTimeFormat('en-GB', { timeZone: z }); return true; } catch { return false; } }
+function resolveTz(s) {
+  if (!s || !s.trim()) return null;
+  const t = s.trim();
+  if (validZone(t)) return { tz: t, name: t };
+  const low = t.toLowerCase();
+  return findPlace(low) || findZone(low);
+}
+const TIME_RE = /\b(what(?:'s| is)?(?: the)? (?:current |local |exact )?(?:time|date|day)|what time|what day|time (?:is it|now)|current time|local time|date today|today'?s date|what date)\b/i;
+function timeQuery(text) {
+  if (!TIME_RE.test(text)) return null;
+  const low = text.toLowerCase();
+  const found = findPlace(low) || findZone(low);
+  if (found) return found;
+  const m = low.match(/\b(?:in|at|for)\s+(?:the\s+)?([a-z][a-z .'-]{1,40}?)\s*[?.!]*$/);
+  if (m && !/\b(it|now|today|this)\b/.test(m[1])) return { unknown: m[1].trim() };
+  return { tz: null };
+}
+const fmtTime = (d, tz) => d.toLocaleTimeString('en-GB', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });
+const fmtDate = (d, tz) => d.toLocaleDateString('en-GB', { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+function timeAnswer(q) {
+  const now = new Date();
+  if (q.unknown) return `I could not find a time zone for "${q.unknown}". Try a nearby major city, for example "what time is it in London".`;
+  if (q.tz) return `It is **${fmtTime(now, q.tz)}** on ${fmtDate(now, q.tz)} in ${q.name} (time zone ${q.tz}).`;
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return `It is **${fmtTime(now, tz)}** on ${fmtDate(now, tz)} on this device (time zone ${tz}).`;
+}
+function quickMath(text) {
+  const raw = text.toLowerCase().replace(/[?=]/g, ' ').trim();
+  const pct = raw.match(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)/);
+  if (pct) return { expr: `(${pct[1]}/100)*${pct[2]}`, label: `${pct[1]}% of ${pct[2]}` };
+  const s = raw.replace(/^(what(?:'s| is)|calculate|compute|work out|solve|evaluate)\s+/, '')
+    .replace(/\bsquare root of\s+([\d.]+)/g, 'sqrt($1)')
+    .replace(/\bplus\b/g, '+').replace(/\bminus\b/g, '-')
+    .replace(/\b(times|multiplied by|x)\b/g, '*').replace(/\bdivided by\b/g, '/')
+    .replace(/\s+/g, ' ').trim();
+  const probe = s.replace(/sqrt\(/g, '(');
+  if (!/\d/.test(s) || !/^[\d\s.+\-*/()^]+$/.test(probe) || !/[+\-*/^]|sqrt/.test(s)) return null;
+  return { expr: s, label: s.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/\s+/g, ' ').trim() };
+}
+function evaluate(expr) {
+  const js = expr.replace(/\bsqrt\(/g, 'Math.sqrt(').replace(/\^/g, '**');
+  if (!/^[\d\s.+\-*/()]+$/.test(js.replace(/Math\.sqrt/g, '0'))) return null;
+  try { const v = Function(`"use strict"; return (${js});`)(); return Number.isFinite(v) ? v : null; }
+  catch { return null; }
+}
+const fmtNum = v => Number(v.toPrecision(12)).toLocaleString('en-GB', { maximumFractionDigits: 10 });
+
+const FRESH_RE = /\b(current|currently|latest|today|tonight|tomorrow|right now|recent|recently|newest|this (?:week|month|year)|price|prices|cost|net worth|worth|salary|income|news|headlines|score|scores|weather|forecast|stock|shares|exchange rate|who is the|who's the|who runs|ceo|president|prime minister|chancellor|king|election|released|release date|just announced|as of|last (?:week|month|year)|still|now|best|top\s*\d+|top ten|ranking|rankings|rank|list of|compare|versus|vs|cheapest|worst|most popular|population|how many|how much|founded|born|died|age|202\d|203\d|phone|phones|laptop|laptops|car|cars|model|models|app|apps|game|games|movie|movies|film|films|album|song|restaurant|restaurants|hotel|hotels|flight|flights|iphone|iphones|android|buy|should i)\b/i;
+const CREATIVE_RE = /\b(write|poem|story|joke|translate|rewrite|summari[sz]e (?:this|the following)|code|function|script|debug|fix my|draft|email|essay|lyrics|recipe|help me|explain (?:how|why)|you|your|yourself|hello|hi|hey|thanks|thank you)\b/i;
+const UNSURE_RE = /(don't|do not|can't|cannot|unable to|not able to) (?:have|access|know|browse|verify|confirm|check)|real-time|up-to-date|as of my|knowledge cutoff|not sure|not certain|i am unable|i'm unable/i;
+const ANSWER_UNSURE_RE = /could not (?:confirm|verify|find)|cannot (?:confirm|verify)|not able to (?:confirm|verify)|no (?:reliable|relevant) (?:information|answer)/i;
+function shouldSearch(text) {
+  const t = text.trim();
+  if (FRESH_RE.test(t)) return true;
+  if (CREATIVE_RE.test(t)) return false;
+  return /^(who|what|which|where|when|how|is|are|does|do|did|was|were|can|why|should)\b/i.test(t) && t.split(/\s+/).length >= 3;
+}
+
 const TOOL_PARAM = { web_search: 'query', fetch_url: 'url', wikipedia: 'topic', calculate: 'expression', current_time: 'timezone' };
 const TOOL_LABEL = {
   web_search: ['Searching the web', 'query'],
@@ -779,13 +804,11 @@ const TOOL_LABEL = {
   calculate: ['Calculating', 'expression'],
   current_time: ['Checking the time', 'timezone'],
 };
-
 async function runTool(call, onStep = () => {}) {
   switch (call.name) {
-    case 'fetch_url': {
+    case 'fetch_url':
       try { return `Page text: ${cleanEvidence(await pageText(call.args.url)).slice(0, 1500)}`; }
       catch (e) { return `Could not read that page: ${e.message}`; }
-    }
     case 'wikipedia': {
       const pages = await wikiPages(call.args.topic).catch(() => []);
       return pages.length ? `${pages[0].title}: ${pages[0].text.slice(0, 1000)}` : `No Wikipedia article found for "${call.args.topic}".`;
@@ -805,7 +828,6 @@ async function runTool(call, onStep = () => {}) {
     default: return 'Unknown tool.';
   }
 }
-
 function normalizeCall(name, args) {
   const param = TOOL_PARAM[name];
   if (!param) return null;
@@ -856,36 +878,22 @@ function extractToolCalls(text) {
 function splitFinal(raw) {
   let thinking = '', visible = raw;
   const pair = raw.match(/<think>([\s\S]*?)<\/think>/);
-  if (pair) {
-    thinking = pair[1].trim();
-    visible = raw.replace(pair[0], '');
-  } else if (raw.includes('</think>')) {
-    const i = raw.indexOf('</think>');
-    thinking = raw.slice(0, i).replace(/<think>/g, '').trim();
-    visible = raw.slice(i + 8);
-  } else if (raw.includes('<think>')) {
-    const i = raw.indexOf('<think>');
-    thinking = raw.slice(i + 7).trim();
-    visible = raw.slice(0, i);
-  }
+  if (pair) { thinking = pair[1].trim(); visible = raw.replace(pair[0], ''); }
+  else if (raw.includes('</think>')) { const i = raw.indexOf('</think>'); thinking = raw.slice(0, i).replace(/<think>/g, '').trim(); visible = raw.slice(i + 8); }
+  else if (raw.includes('<think>')) { const i = raw.indexOf('<think>'); thinking = raw.slice(i + 7).trim(); visible = raw.slice(0, i); }
   return { thinking, visible: visible.replace(/<\/?think>/g, '').trim() };
 }
-
 function cleanAnswer(t, n = 0) {
   return (t || '')
     .replace(/<tool_call>[\s\S]*?(<\/tool_call>|$)/g, '')
     .replace(/https?:\/\/\S+/g, '')
     .replace(/^\s*Title:\s*/gim, '')
-    .replace(/\[\[?\s*\d{1,4}\s*\]?\]/g, m => {
-      const d = parseInt(m.replace(/\D/g, ''), 10);
-      return d >= 1 && d <= n ? `[${d}]` : '';
-    })
+    .replace(/\[\[?\s*\d{1,4}\s*\]?\]/g, m => { const d = parseInt(m.replace(/\D/g, ''), 10); return d >= 1 && d <= n ? `[${d}]` : ''; })
     .replace(/(\[\d+\]\s*){3,}/g, '')
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
-
 function isDegenerate(t) {
   if (!t) return true;
   if (t.length > 1200) return true;
@@ -900,36 +908,32 @@ function isDegenerate(t) {
   }
   return (t.match(/\[\d+\]/g) || []).length > 8;
 }
-
-/* The answer must use the question's terms, or honestly say it could not confirm */
 function answersQuestion(answer, terms) {
   if (ANSWER_UNSURE_RE.test(answer)) return true;
   return hitCount(answer, terms) >= needFor(terms.length, 0.5);
 }
 
 /* ============================================================
-   DOM refs and state
+   DOM and state
    ============================================================ */
 const $ = id => document.getElementById(id);
 const statusEl = $('status'), progressBar = $('progress-bar'), progressFill = $('progress-fill');
 const chat = $('chat'), chatEmpty = $('chat-empty'), counter = $('counter');
 const userInput = $('user-input'), sendBtn = $('send-btn'), stopBtn = $('stop-btn');
-const resetBtn = $('reset-btn'), modelInput = $('model-input'), loadBtn = $('load-btn');
+const resetBtn = $('reset-btn'), loadBtn = $('load-btn'), prevBtn = $('prev-btn');
 const apiKeyInput = $('api-key');
 const toggleTools = $('toggle-tools'), toggleThinking = $('toggle-thinking');
 const fileInput = $('file-input'), fileBtn = $('file-btn');
 const attachChip = $('attach-chip'), attachThumb = $('attach-thumb'), attachName = $('attach-name'), attachClear = $('attach-clear');
 const resetModal = $('reset-modal'), cancelReset = $('cancel-reset'), confirmReset = $('confirm-reset');
 const sideEl = $('side'), sideList = $('side-list'), newChatBtn = $('new-chat'), sideToggle = $('side-toggle'), exportBtn = $('export-chat');
+const customBox = $('custom-box');
 
 const STORE_KEY = 'webllm-chats-v2';
-const MODEL_KEY = 'webllm-model-v2';
 const PREF_KEY = 'webllm-prefs-v1';
-const API_KEY_STORE = 'webllm-brave-key';
 const MAX_HISTORY = 12;
 const THINK_LIMIT = 1200;
 
-let engine = null, currentModel = null, worker = null;
 let loading = false, isGenerating = false, stopRequested = false;
 let implicitThink = false;
 let pendingImage = null;
@@ -940,41 +944,10 @@ const prefs = (() => {
 })();
 let toolsEnabled = prefs.tools;
 let thinkingEnabled = prefs.thinking;
-function savePrefs() {
-  try { localStorage.setItem(PREF_KEY, JSON.stringify({ tools: toolsEnabled, thinking: thinkingEnabled })); } catch {}
-}
+function savePrefs() { writeJSON(PREF_KEY, { tools: toolsEnabled, thinking: thinkingEnabled }); }
 function paintToggles() {
   toggleTools.classList.toggle('active', toolsEnabled);
   toggleThinking.classList.toggle('active', thinkingEnabled);
-}
-
-/* ============================================================
-   Engine: worker first (keeps the page responsive), main thread as fallback
-   ============================================================ */
-function getWorker() {
-  if (worker) return worker;
-  const src = `
-    import { WebWorkerMLCEngineHandler } from "https://esm.run/@mlc-ai/web-llm";
-    const handler = new WebWorkerMLCEngineHandler();
-    self.onmessage = msg => handler.onmessage(msg);
-  `;
-  worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })), { type: 'module' });
-  return worker;
-}
-async function createEngine(id, onProgress) {
-  try {
-    return await CreateWebWorkerMLCEngine(getWorker(), id, { initProgressCallback: onProgress });
-  } catch (err) {
-    console.warn('Worker engine failed, using main thread:', err);
-    try { worker?.terminate(); } catch {}
-    worker = null;
-    return await CreateMLCEngine(id, { initProgressCallback: onProgress });
-  }
-}
-async function checkWebGPU() {
-  if (!navigator.gpu) throw new Error('WebGPU is not available. Use a recent Chrome or Edge browser.');
-  const adapter = await navigator.gpu.requestAdapter();
-  if (!adapter) throw new Error('No WebGPU adapter found on this device.');
 }
 
 /* Live split while streaming */
@@ -1003,19 +976,11 @@ const thinkingTooLong = raw => {
    ============================================================ */
 function textOf(m) { return typeof m.content === 'string' ? m.content : (m.content.find(p => p.type === 'text')?.text || ''); }
 function imageOf(m) { return Array.isArray(m.content) ? m.content.find(p => p.type === 'image_url')?.image_url.url : null; }
-function loadChats() {
-  try { const v = JSON.parse(localStorage.getItem(STORE_KEY)); return Array.isArray(v) ? v : []; }
-  catch { return []; }
-}
+function loadChats() { const v = readJSON(STORE_KEY, []); return Array.isArray(v) ? v : []; }
 function persist() {
   const slim = chats.map(c => ({
     ...c,
-    convo: c.convo.map(m => ({
-      role: m.role,
-      content: textOf(m),
-      think: m.think || undefined,
-      sources: m.sources || undefined,
-    })),
+    convo: c.convo.map(m => ({ role: m.role, content: textOf(m), think: m.think || undefined, sources: m.sources || undefined })),
   }));
   try { localStorage.setItem(STORE_KEY, JSON.stringify(slim)); }
   catch { setStatus('⚠️ Could not save chats (storage full?)'); }
@@ -1040,10 +1005,7 @@ function saveActive() {
 }
 function renderList() {
   sideList.innerHTML = '';
-  if (!chats.length) {
-    sideList.appendChild(el('div', 'empty-note', 'No saved chats yet. Send a message and it will be saved here.'));
-    return;
-  }
+  if (!chats.length) { sideList.appendChild(el('div', 'empty-note', 'No saved chats yet. Send a message and it will be saved here.')); return; }
   for (const c of chats) {
     const item = el('div', 'side-item' + (c === active ? ' active' : ''));
     const t = el('span', 't', chatTitle(c));
@@ -1092,8 +1054,7 @@ function exportChat() {
     if (m.sources?.length) s += '\n\nSources:\n' + m.sources.map((x, i) => `[${i + 1}] ${x.title} — ${x.url}`).join('\n');
     return s;
   }).join('\n\n');
-  const blob = new Blob([`# ${chatTitle(active)}\n\n${body}\n`], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
+  const url = URL.createObjectURL(new Blob([`# ${chatTitle(active)}\n\n${body}\n`], { type: 'text/markdown' }));
   const a = el('a');
   a.href = url;
   a.download = `chat-${new Date().toISOString().slice(0, 10)}.md`;
@@ -1114,7 +1075,7 @@ function hideEmpty() { chatEmpty.style.display = 'none'; }
 function updateButtons() {
   sendBtn.style.display = isGenerating ? 'none' : '';
   stopBtn.classList.toggle('visible', isGenerating);
-  sendBtn.disabled = isGenerating || !engine;
+  sendBtn.disabled = isGenerating || !currentSpec;
 }
 function setInputEnabled(on) { userInput.disabled = !on; updateButtons(); }
 function autoResize() {
@@ -1143,10 +1104,7 @@ apiKeyInput.addEventListener('change', () => {
 });
 
 fileBtn.onclick = () => {
-  if (!currentModel || !isVisionModel(currentModel)) {
-    setStatus('Images need a vision model such as Phi-3.5-vision or Gemma-3.');
-    return;
-  }
+  if (!currentSpec || !specIsVision(currentSpec)) { setStatus('Images need a vision model. Choose one, or add a custom vision model.'); return; }
   fileInput.click();
 };
 fileInput.onchange = () => {
@@ -1173,17 +1131,25 @@ confirmReset.onclick = async () => {
   try { engine?.interruptGenerate(); } catch {}
   if (engine) { try { await engine.unload(); } catch {} }
   engine = null;
-  currentModel = null;
+  currentSpec = null;
   isGenerating = false;
   chats = [];
-  try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(MODEL_KEY); } catch {}
+  customModels = [];
+  try {
+    localStorage.removeItem(STORE_KEY);
+    localStorage.removeItem(KEY_MODEL);
+    localStorage.removeItem(KEY_PREV);
+    localStorage.removeItem(KEY_CUSTOM);
+  } catch {}
+  spec = DEFAULT_SPEC;
+  prevSpec = null;
   active = blankChat();
   clearAttachment();
-  modelInput.value = 'Qwen3-0.6B';
   progressBar.style.display = 'none';
   setStatus('Reset complete. Press Load to start again.');
   setInputEnabled(false);
   fileBtn.classList.add('disabled');
+  renderModelSelect();
   renderChat(); renderList();
 };
 
@@ -1203,17 +1169,57 @@ document.addEventListener('keydown', e => {
 });
 
 /* ============================================================
-   Model loading
+   Custom model form
    ============================================================ */
-loadBtn.onclick = () => loadModel({ auto: false });
-modelInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadModel({ auto: false }); });
+$('c-save').onclick = () => {
+  const name = $('c-name').value.trim() || 'Custom model';
+  const model_id = $('c-id').value.trim();
+  const url = $('c-url').value.trim();
+  const lib = $('c-lib').value.trim();
+  const vision = $('c-vision').checked;
+  if (!model_id || !url || !lib) { setStatus('Custom models need a model ID, a weights URL and a library URL.'); return; }
+  customModels.push({ name, model_id, url, lib, vision });
+  writeJSON(KEY_CUSTOM, customModels);
+  const idx = customModels.length - 1;
+  renderModelSelect();
+  loadModel({ spec: { kind: 'custom', index: idx } });
+  customBox.open = false;
+};
+$('c-remove').onclick = () => {
+  const sel = specFromKey(modelSelect.value);
+  if (sel.kind !== 'custom') { setStatus('Select a custom model in the menu first, then remove it.'); return; }
+  customModels.splice(sel.index, 1);
+  writeJSON(KEY_CUSTOM, customModels);
+  if (spec.kind === 'custom' && spec.index === sel.index) spec = DEFAULT_SPEC;
+  if (prevSpec?.kind === 'custom' && prevSpec.index === sel.index) prevSpec = null;
+  writeJSON(KEY_MODEL, spec);
+  writeJSON(KEY_PREV, prevSpec);
+  renderModelSelect();
+  setStatus('Custom model removed.');
+};
 
-async function loadModel({ auto = false, modelId = null } = {}) {
+/* ============================================================
+   Model loading and switching
+   ============================================================ */
+loadBtn.onclick = () => {
+  const s = specFromKey(modelSelect.value);
+  loadModel({ spec: s });
+};
+modelSelect.addEventListener('change', () => {
+  const s = specFromKey(modelSelect.value);
+  if (s.kind === 'custom' && !customModels[s.index]) return;
+  setStatus(`Selected ${specName(s)}. Press Load.`);
+});
+prevBtn.onclick = () => { if (prevSpec) loadModel({ spec: prevSpec }); };
+
+async function loadModel({ spec: target, auto = false } = {}) {
   if (isGenerating || loading) return;
-  const id = modelId || resolveModelId(modelInput.value) || DEFAULT_MODEL;
+  const want = target || spec;
+  if (!specValid(want)) { setStatus('That model is no longer available.'); return; }
 
   loading = true;
   loadBtn.disabled = true;
+  prevBtn.disabled = true;
   setInputEnabled(false);
   clearAttachment();
   progressBar.style.display = 'block';
@@ -1226,9 +1232,9 @@ async function loadModel({ auto = false, modelId = null } = {}) {
 
     for (let attempt = 1; attempt <= 3 && !engine; attempt++) {
       try {
-        setStatus(attempt > 1 ? `Retrying (${attempt}/3)…` : `Loading ${id}…`);
+        setStatus(attempt > 1 ? `Retrying (${attempt}/3)…` : `Loading ${specName(want)}…`);
         progressFill.style.width = '0%';
-        engine = await createEngine(id, p => {
+        engine = await createEngine(want, p => {
           setStatus(p.text);
           progressFill.style.width = `${Math.round(p.progress * 100)}%`;
         });
@@ -1241,31 +1247,37 @@ async function loadModel({ auto = false, modelId = null } = {}) {
     }
     if (!engine) throw lastErr || new Error('Model failed to load.');
 
-    currentModel = id;
-    modelInput.value = id;
-    localStorage.setItem(MODEL_KEY, id);
+    if (currentSpec && specKey(currentSpec) !== specKey(want)) prevSpec = currentSpec;
+    currentSpec = want;
+    spec = want;
+    writeJSON(KEY_MODEL, spec);
+    writeJSON(KEY_PREV, prevSpec);
+    renderModelSelect();
+
     progressBar.style.display = 'none';
-    setStatus(`✅ ${id}`);
-    fileBtn.classList.toggle('disabled', !isVisionModel(id));
+    setStatus(`✅ ${specName(want)}`);
+    fileBtn.classList.toggle('disabled', !specIsVision(want));
     setInputEnabled(true);
     userInput.focus();
     if (!active.convo.length) {
-      addStaticAi(`Hi! I'm ${id}.${isVisionModel(id) ? ' You can attach an image 📎.' : ''} What can I help with?`);
+      addStaticAi(`Hi! I'm ${specName(want)}.${specIsVision(want) ? ' You can attach an image 📎.' : ''} What can I help with?`);
     }
   } catch (err) {
     progressBar.style.display = 'none';
     const msg = err?.message || String(err);
-    if (auto && id !== DEFAULT_MODEL) {
-      setStatus(`Could not load ${id}. Trying the default model…`);
+    if (auto && specKey(want) !== specKey(DEFAULT_SPEC)) {
       loading = false;
       loadBtn.disabled = false;
-      return loadModel({ auto: true, modelId: DEFAULT_MODEL });
+      setStatus(`Could not load ${specName(want)}. Trying the default model…`);
+      return loadModel({ spec: DEFAULT_SPEC, auto: true });
     }
     setStatus(`❌ ${msg} (press Load to retry)`);
+    if (currentSpec) { setInputEnabled(true); }
   } finally {
     loading = false;
     loadBtn.disabled = false;
     updateButtons();
+    updatePrevButton();
   }
 }
 
@@ -1300,7 +1312,6 @@ function addStaticBody(wrapper, text) {
   scrollToBottom();
   return body;
 }
-
 function makeThink() {
   const box = el('div', 'think');
   const head = el('button', 'think-head');
@@ -1309,14 +1320,13 @@ function makeThink() {
   const label = el('span', null, 'Thinking…');
   head.append(chev, label);
   const body = el('div', 'think-body');
-  let open = true, done = false;
+  let done = false;
   const setOpen = o => {
-    open = o;
     body.classList.toggle('open', o);
     chev.classList.toggle('open', o);
     if (done) label.textContent = o ? 'Hide reasoning' : 'Show reasoning';
   };
-  head.onclick = () => setOpen(!open);
+  head.onclick = () => setOpen(!body.classList.contains('open'));
   box.append(head, body);
   setOpen(true);
   return {
@@ -1326,11 +1336,7 @@ function makeThink() {
       box.classList.toggle('live', live);
       if (live) body.scrollTop = body.scrollHeight;
     },
-    finish() {
-      done = true;
-      box.classList.remove('live');
-      setOpen(false);
-    },
+    finish() { done = true; box.classList.remove('live'); setOpen(false); },
   };
 }
 function makeThinkStatic(text) {
@@ -1339,7 +1345,6 @@ function makeThinkStatic(text) {
   t.finish();
   return t.box;
 }
-
 function mkBtn(label, fn, extra = '') {
   const b = el('button', 'act ' + extra, label);
   b.type = 'button';
@@ -1369,7 +1374,6 @@ function sourcesBlock(sources) {
   });
   return box;
 }
-
 function addAnswer(m, isLast) {
   hideEmpty();
   const wrap = el('div', 'msg ai');
@@ -1382,13 +1386,11 @@ function addAnswer(m, isLast) {
   chat.appendChild(wrap);
   scrollToBottom();
 }
-
 function finishTurn(wrapper, turn) {
   chat.querySelectorAll('.regen').forEach(b => b.remove());
   if (turn.sources.length) wrapper.appendChild(sourcesBlock(turn.sources));
   wrapper.appendChild(actionBar(turn.text, true));
 }
-
 function regenerate() {
   if (isGenerating || !engine || !active) return;
   const convo = active.convo;
@@ -1402,7 +1404,6 @@ function regenerate() {
   autoResize();
   sendMessage();
 }
-
 function createSegment(wrapper, label = 'Thinking') {
   const e = el('div', 'segment');
   e.innerHTML = `
@@ -1416,14 +1417,10 @@ function createSegment(wrapper, label = 'Thinking') {
   return { el: e, pending: e.querySelector('.pending'), think: null, body: null, thinkEnd: null };
 }
 function removePending(seg) { seg.pending?.remove(); seg.pending = null; }
-
 function renderLive(seg, raw) {
   const f = splitLive(raw);
   if (f.thinkText !== null && (f.thinkText || !f.thinkClosed)) {
-    if (!seg.think) {
-      seg.think = makeThink();
-      seg.el.insertBefore(seg.think.box, seg.el.firstChild);
-    }
+    if (!seg.think) { seg.think = makeThink(); seg.el.insertBefore(seg.think.box, seg.el.firstChild); }
     seg.think.setText(f.thinkText, !f.thinkClosed);
     if (f.thinkClosed && !seg.thinkEnd) { seg.thinkEnd = Date.now(); seg.think.finish(); }
   }
@@ -1433,31 +1430,19 @@ function renderLive(seg, raw) {
     seg.body.innerHTML = md(text);
   }
 }
-
 function finishSeg(seg, raw) {
   removePending(seg);
   const f = splitFinal(raw);
   if (seg.think) {
-    if (f.thinking) {
-      seg.think.setText(f.thinking, false);
-      if (!seg.thinkEnd) seg.think.finish();
-    } else {
-      seg.think.box.remove();
-      seg.think = null;
-    }
+    if (f.thinking) { seg.think.setText(f.thinking, false); if (!seg.thinkEnd) seg.think.finish(); }
+    else { seg.think.box.remove(); seg.think = null; }
   }
   if (seg.body) { seg.body.remove(); seg.body = null; }
   const text = cleanAnswer(f.visible);
-  if (text) {
-    seg.body = el('div', 'answer');
-    seg.body.innerHTML = md(text);
-    seg.el.appendChild(seg.body);
-  }
+  if (text) { seg.body = el('div', 'answer'); seg.body.innerHTML = md(text); seg.el.appendChild(seg.body); }
   if (!seg.think && !seg.body) seg.el.remove();
   return { thinking: f.thinking, text };
 }
-
-/* Tool box: collapsed by default; opening it shows the search log and evidence */
 function addToolBox(wrapper, label, detail) {
   const base = `${label}${detail ? ': ' + detail : ''}`;
   const box = el('div', 'tool');
@@ -1500,18 +1485,16 @@ function buildSystemPrompt(forceAnswer) {
   if (forceAnswer) p += `\n\nGive the final answer now. Be brief. Do not reason at length.`;
   return p;
 }
-
 function buildMessages(forceAnswer = false) {
   const recent = active.convo.slice(-MAX_HISTORY).map(m => ({ role: m.role, content: m.content }));
   const msgs = [{ role: 'system', content: buildSystemPrompt(forceAnswer) }, ...recent];
   const last = msgs[msgs.length - 1];
-  if (isQwen3(currentModel) && (forceAnswer || !thinkingEnabled) && last?.role === 'user') {
+  if (isQwen3(specModelId(currentSpec)) && (forceAnswer || !thinkingEnabled) && last?.role === 'user') {
     if (typeof last.content === 'string') last.content += ' /no_think';
     else last.content = last.content.map(p => p.type === 'text' ? { ...p, text: p.text + ' /no_think' } : p);
   }
   return msgs;
 }
-
 function answerMessages(question, evidence, noEvidence) {
   const common = `Today is ${todayStr()}. Be accurate and concise. Do not show your reasoning. Never write URLs.`;
   const sys = noEvidence
@@ -1522,7 +1505,7 @@ function answerMessages(question, evidence, noEvidence) {
       `compare only what the evidence says. Then add one or two short supporting sentences, citing like [1] or [2]. ` +
       `If the evidence does not answer the question, say "I could not confirm this from the sources I checked" and name one specific thing to check. Keep it under 100 words.`;
   let user = noEvidence ? `Question: ${question}` : `Question: ${question}\n\nEvidence:\n${evidence}`;
-  if (isQwen3(currentModel)) user += '\n\n/no_think';
+  if (isQwen3(specModelId(currentSpec))) user += '\n\n/no_think';
   return [{ role: 'system', content: sys }, { role: 'user', content: user }];
 }
 
@@ -1531,19 +1514,13 @@ function answerMessages(question, evidence, noEvidence) {
    ============================================================ */
 async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048, live = true } = {}) {
   const guard = mode === 'chat' && thinkingEnabled;
-  implicitThink = guard && isQwen3(currentModel);
-
+  implicitThink = guard && isQwen3(specModelId(currentSpec));
   let prefix = '', buf = '', frame = 0, cut = false;
   const full = () => prefix + buf;
-  const paint = () => {
-    frame = 0;
-    if (live) { renderLive(seg, full()); scrollIfNearBottom(); }
-  };
+  const paint = () => { frame = 0; if (live) { renderLive(seg, full()); scrollIfNearBottom(); } };
 
   const pump = async (msgs, limit, useGuard) => {
-    const stream = await engine.chat.completions.create({
-      messages: msgs, stream: true, temperature: 0.6, top_p: 0.95, max_tokens: limit,
-    });
+    const stream = await engine.chat.completions.create({ messages: msgs, stream: true, temperature: 0.6, top_p: 0.95, max_tokens: limit });
     for await (const chunk of stream) {
       if (stopRequested) break;
       const d = chunk.choices?.[0]?.delta?.content;
@@ -1556,7 +1533,6 @@ async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048, live
   };
 
   await pump(messages, maxTokens, guard);
-
   if (cut && !stopRequested) {
     try { engine.interruptGenerate(); } catch {}
     await sleep(80);
@@ -1565,7 +1541,6 @@ async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048, live
     implicitThink = false;
     await pump(buildMessages(true), 400, false);
   }
-
   if (frame) cancelAnimationFrame(frame);
   if (stopRequested) { try { engine.interruptGenerate(); } catch {} }
   implicitThink = false;
@@ -1575,9 +1550,6 @@ async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048, live
 /* ============================================================
    Turn handlers
    ============================================================ */
-
-/* Writes the answer from relevant evidence. The model's text is checked. If it fails the check,
-   the app says it could not confirm the answer and lists the sources. It never shows unrelated lines. */
 async function answerWithEvidence(wrapper, turn, question, items, evidence, terms) {
   const seg = createSegment(wrapper, evidence ? 'Writing answer' : 'Answering');
   const raw = await streamOnce(seg, answerMessages(question, evidence, !evidence), { mode: 'answer', maxTokens: 320, live: false });
@@ -1586,29 +1558,24 @@ async function answerWithEvidence(wrapper, turn, question, items, evidence, term
   const n = items.length;
   let answer = cleanAnswer(splitFinal(raw).visible, n);
   const ok = answer && !isDegenerate(answer) && (!n || answersQuestion(answer, terms));
-
   if (!ok) {
     answer = n
       ? `I could not confirm a clear answer to this from the ${n} source${n > 1 ? 's' : ''} I checked. ` +
-        `Try opening a source below, or rephrase the question with more detail (for example, a specific model name or country).`
+        `Try opening a source below, or rephrase the question with more detail (for example a specific model name or country).`
       : 'I could not find relevant information on the web or Wikipedia for this. Try rephrasing with more detail, or check a reliable source directly.';
   }
-
   addStaticBody(wrapper, answer);
   turn.text = answer;
   turn.sources = items.map(it => ({ title: it.title, url: it.url }));
 }
-
 async function runSearch(wrapper, turn, query, prompt) {
   const box = addToolBox(wrapper, 'Searching the web', query);
   const r = await research(query, box);
-  const log = r.tried.join('; ') || 'none';
   const summary = r.items.length ? `${r.items.length} relevant source${r.items.length > 1 ? 's' : ''}` : 'no relevant sources';
-  box.setResult(`${r.evidence || 'No relevant sources were found.'}\n\nSearch log: ${log}`, summary);
+  box.setResult(`${r.evidence || 'No relevant sources were found.'}\n\nSearch log: ${r.tried.join('; ') || 'none'}`, summary);
   if (stopRequested) { turn.text = '*Stopped.*'; return; }
   await answerWithEvidence(wrapper, turn, prompt, r.items, r.evidence, r.terms);
 }
-
 async function chatTurn(wrapper, turn, text, prompt) {
   const seg = createSegment(wrapper, 'Thinking');
   const raw = await streamOnce(seg, buildMessages(false), { mode: 'chat' });
@@ -1621,20 +1588,15 @@ async function chatTurn(wrapper, turn, text, prompt) {
     turn.text = done.text || '*Stopped.*';
     return;
   }
-
   const needsTool = toolsEnabled && calls.length > 0;
   const needsSearch = toolsEnabled && !needsTool && UNSURE_RE.test(f.visible);
-
   if (!needsTool && !needsSearch) {
     const done = finishSeg(seg, raw);
     if (done.thinking) turn.thinks.push(done.thinking);
     turn.text = done.text || '…';
     return;
   }
-
-  // The draft is discarded: it is never shown as reasoning or as an answer
   seg.el.remove();
-
   if (needsTool && calls[0].name === 'web_search') {
     await runSearch(wrapper, turn, calls[0].args.query, prompt);
   } else if (needsTool) {
@@ -1654,7 +1616,7 @@ async function chatTurn(wrapper, turn, text, prompt) {
    ============================================================ */
 async function sendMessage() {
   const text = userInput.value.trim();
-  if ((!text && !pendingImage) || isGenerating || !engine) return;
+  if ((!text && !pendingImage) || isGenerating || !engine || !currentSpec) return;
 
   const image = pendingImage;
   userInput.value = '';
@@ -1663,7 +1625,8 @@ async function sendMessage() {
   addUserMessage(text || '(image)', image);
 
   const prompt = text || 'Describe this image.';
-  active.convo.push(image && isVisionModel(currentModel)
+  const useImage = image && specIsVision(currentSpec);
+  active.convo.push(useImage
     ? { role: 'user', content: [{ type: 'image_url', image_url: { url: image } }, { type: 'text', text: prompt }] }
     : { role: 'user', content: prompt });
   saveActive();
@@ -1723,13 +1686,13 @@ async function sendMessage() {
 }
 
 /* ============================================================
-   Start up
+   Start up: open the last chat, show the model menu, auto-load
    ============================================================ */
 active = chats[0] ?? blankChat();
+renderModelSelect();
 renderChat();
 renderList();
-modelInput.value = localStorage.getItem(MODEL_KEY) || 'Qwen3-0.6B';
-loadModel({ auto: true, modelId: resolveModelId(modelInput.value) || DEFAULT_MODEL });
+loadModel({ spec, auto: true });
 </script>
 </body>
 </html>
