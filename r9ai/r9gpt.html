@@ -109,7 +109,7 @@ details.custom .note { font-size: .74rem; color: rgba(255,255,255,.6); line-heig
 .tool-result.open { display: block; }
 .spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(191,219,254,.3); border-top-color: #bfdbfe; animation: spin .8s linear infinite; flex-shrink: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.error { color: #fecdd3; background: rgba(244,63,94,.18); border: 1px solid rgba(244,63,94,.4); border-radius: 12px; padding: 10px 12px; font-size: .88rem; }
+.error { color: #fecdd3; background: rgba(244,63,94,.18); border: 1px solid rgba(244,63,94,.4); border-radius: 12px; padding: 10px 12px; font-size: .88rem; white-space: pre-wrap; }
 .composer { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .attach-chip { display: none; align-items: center; gap: 8px; width: fit-content; padding: 6px 8px 6px 6px; border-radius: 12px; background: rgba(255,255,255,.14); font-size: .8rem; color: var(--muted); }
 .attach-chip.on { display: flex; }
@@ -183,7 +183,7 @@ details.custom .note { font-size: .74rem; color: rgba(255,255,255,.6); line-heig
             <button class="btn primary" id="c-save">Save and load</button>
             <button class="btn" id="c-remove">Remove selected custom model</button>
           </div>
-          <div class="note">Hugging Face repos that contain safetensors or GGUF files cannot run in the browser directly. They must first be converted to MLC format with MLC-LLM and the compiled .wasm library hosted somewhere public.</div>
+          <div class="note">Hugging Face repos with safetensors or GGUF files cannot run in the browser directly. They must first be converted to MLC format with MLC-LLM, and the compiled .wasm library must be hosted publicly.</div>
         </div>
       </details>
       <div class="toggles">
@@ -231,7 +231,8 @@ details.custom .note { font-size: .74rem; color: rgba(255,255,255,.6); line-heig
 </div>
 
 <script type="module">
-import { CreateMLCEngine, CreateWebWorkerMLCEngine, prebuiltAppConfig } from "https://esm.run/@mlc-ai/web-llm";
+import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+const { CreateMLCEngine, CreateWebWorkerMLCEngine, prebuiltAppConfig } = webllm;
 
 /* ============================================================
    Basics
@@ -267,8 +268,6 @@ function md(text) {
 
 /* ============================================================
    MODELS
-   Prebuilt models come from WebLLM's own list. Custom models are
-   MLC builds you add yourself. Quick switch remembers the previous model.
    ============================================================ */
 const PREBUILT_IDS = prebuiltAppConfig.model_list.map(m => m.model_id);
 const FAMILY_RE = /qwen|llama|gemma|phi|smol|deepseek|mistral/i;
@@ -286,10 +285,10 @@ const DEFAULT_SPEC = { kind: 'prebuilt', id: pickDefault() };
 const KEY_MODEL = 'webllm-model-spec-v3';
 const KEY_PREV = 'webllm-model-prev-v3';
 const KEY_CUSTOM = 'webllm-custom-models-v3';
+const KEY_MODE = 'webllm-load-mode-v4';
 
 let customModels = readJSON(KEY_CUSTOM, []);
 
-/* A spec is { kind:'prebuilt', id } or { kind:'custom', index } */
 const specKey = s => s.kind === 'custom' ? `c:${s.index}` : `p:${s.id}`;
 function specFromKey(k) {
   if (k.startsWith('c:')) return { kind: 'custom', index: +k.slice(2) };
@@ -313,20 +312,19 @@ function specEngineOpts(s) {
   return { appConfig: { model_list: [{ model: c.url, model_id: c.model_id, model_lib: c.lib }] } };
 }
 function specValid(s) {
+  if (!s) return false;
   if (s.kind === 'custom') return !!customModels[s.index];
   return PREBUILT_IDS.includes(s.id);
 }
 
 let currentSpec = null;
 let spec = readJSON(KEY_MODEL, null);
-if (!spec || !specValid(spec)) spec = DEFAULT_SPEC;
+if (!specValid(spec)) spec = DEFAULT_SPEC;
 let prevSpec = readJSON(KEY_PREV, null);
-if (prevSpec && !specValid(prevSpec)) prevSpec = null;
+if (!specValid(prevSpec)) prevSpec = null;
 
-const modelSelect = el('select', 'sel');
-modelSelect.id = 'model-select';
 function renderModelSelect() {
-  const sel = document.getElementById('model-select');
+  const sel = $('model-select');
   sel.innerHTML = '';
   const pre = document.createElement('optgroup');
   pre.label = 'Built in (WebLLM prebuilt)';
@@ -354,17 +352,25 @@ function renderModelSelect() {
   updatePrevButton();
 }
 function updatePrevButton() {
-  const b = document.getElementById('prev-btn');
+  const b = $('prev-btn');
   b.disabled = !prevSpec || (currentSpec && specKey(prevSpec) === specKey(currentSpec));
   b.title = prevSpec ? `Switch back to ${specName(prevSpec)}` : 'No previous model yet';
 }
 
 /* ============================================================
-   Engine: worker first (keeps the page responsive), main thread as fallback
+   ENGINE LOADING
+   Worker and main-thread modes. A load that stops making progress
+   for STALL_MS is treated as failed, so the app can recover.
    ============================================================ */
+const STALL_MS = 150000;
 let engine = null, worker = null;
-function getWorker() {
-  if (worker) return worker;
+
+function killWorker() {
+  try { worker?.terminate(); } catch {}
+  worker = null;
+}
+function newWorker() {
+  killWorker();
   const src = `
     import { WebWorkerMLCEngineHandler } from "https://esm.run/@mlc-ai/web-llm";
     const handler = new WebWorkerMLCEngineHandler();
@@ -373,18 +379,72 @@ function getWorker() {
   worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })), { type: 'module' });
   return worker;
 }
-async function createEngine(s, onProgress) {
-  const id = specModelId(s);
-  const extra = specEngineOpts(s);
-  try {
-    return await CreateWebWorkerMLCEngine(getWorker(), id, { initProgressCallback: onProgress, ...extra });
-  } catch (err) {
-    console.warn('Worker engine failed, using main thread:', err);
-    try { worker?.terminate(); } catch {}
-    worker = null;
-    return await CreateMLCEngine(id, { initProgressCallback: onProgress, ...extra });
-  }
+
+/* Builds one engine in one mode. Rejects on error, worker crash, or a stall. */
+function buildEngine(s, mode, onProgress) {
+  return new Promise((resolve, reject) => {
+    const id = specModelId(s);
+    const extra = specEngineOpts(s);
+    let timer = null, settled = false, lastText = 'starting';
+    const finish = (fn, v) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      fn(v);
+    };
+    const arm = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        finish(reject, new Error(`stalled for ${STALL_MS / 1000}s at "${lastText}"`));
+        if (mode === 'worker') killWorker();
+      }, STALL_MS);
+    };
+    const prog = p => {
+      lastText = p?.text || lastText;
+      arm();
+      onProgress(p);
+    };
+    arm();
+    const opts = { initProgressCallback: prog, ...extra };
+
+    let p;
+    if (mode === 'worker') {
+      const w = newWorker();
+      const crash = new Promise((_, rej) => {
+        w.onerror = ev => rej(new Error('worker crashed: ' + (ev.message || 'see browser console')));
+        w.onmessageerror = () => rej(new Error('worker message error'));
+      });
+      p = Promise.race([CreateWebWorkerMLCEngine(w, id, opts), crash]);
+    } else {
+      killWorker();
+      p = CreateMLCEngine(id, opts);
+    }
+    p.then(e => finish(resolve, e), e => finish(reject, e));
+  });
 }
+
+async function unloadEngine() {
+  if (engine) { try { await engine.unload(); } catch {} }
+  engine = null;
+  killWorker();
+}
+
+/* Removes cached files for one model so a corrupted download can be fetched again */
+async function clearModelCache(s) {
+  try {
+    if (typeof webllm.deleteModelAllInfoInCache === 'function') {
+      await webllm.deleteModelAllInfoInCache(specModelId(s), specEngineOpts(s).appConfig);
+    }
+  } catch (e) { console.warn('Cache clear failed', e); }
+}
+
+const modeFor = id => (readJSON(KEY_MODE, {})[id]) || 'worker';
+function rememberMode(id, mode) {
+  const m = readJSON(KEY_MODE, {});
+  m[id] = mode;
+  writeJSON(KEY_MODE, m);
+}
+
 async function checkWebGPU() {
   if (!navigator.gpu) throw new Error('WebGPU is not available. Use a recent Chrome or Edge browser.');
   const adapter = await navigator.gpu.requestAdapter();
@@ -950,7 +1010,6 @@ function paintToggles() {
   toggleThinking.classList.toggle('active', thinkingEnabled);
 }
 
-/* Live split while streaming */
 function splitLive(raw) {
   let thinkText = null, thinkClosed = false, visible = raw;
   const open = raw.indexOf('<think>');
@@ -1090,9 +1149,6 @@ function clearAttachment() {
   attachThumb.removeAttribute('src');
 }
 
-/* ============================================================
-   Toggles, key, attachments, stop, reset
-   ============================================================ */
 toggleTools.onclick = () => { toolsEnabled = !toolsEnabled; paintToggles(); savePrefs(); };
 toggleThinking.onclick = () => { thinkingEnabled = !thinkingEnabled; paintToggles(); savePrefs(); };
 paintToggles();
@@ -1129,8 +1185,7 @@ confirmReset.onclick = async () => {
   resetModal.classList.remove('visible');
   stopRequested = true;
   try { engine?.interruptGenerate(); } catch {}
-  if (engine) { try { await engine.unload(); } catch {} }
-  engine = null;
+  await unloadEngine();
   currentSpec = null;
   isGenerating = false;
   chats = [];
@@ -1140,6 +1195,7 @@ confirmReset.onclick = async () => {
     localStorage.removeItem(KEY_MODEL);
     localStorage.removeItem(KEY_PREV);
     localStorage.removeItem(KEY_CUSTOM);
+    localStorage.removeItem(KEY_MODE);
   } catch {}
   spec = DEFAULT_SPEC;
   prevSpec = null;
@@ -1169,7 +1225,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ============================================================
-   Custom model form
+   Custom models
    ============================================================ */
 $('c-save').onclick = () => {
   const name = $('c-name').value.trim() || 'Custom model';
@@ -1186,7 +1242,7 @@ $('c-save').onclick = () => {
   customBox.open = false;
 };
 $('c-remove').onclick = () => {
-  const sel = specFromKey(modelSelect.value);
+  const sel = specFromKey($('model-select').value);
   if (sel.kind !== 'custom') { setStatus('Select a custom model in the menu first, then remove it.'); return; }
   customModels.splice(sel.index, 1);
   writeJSON(KEY_CUSTOM, customModels);
@@ -1200,13 +1256,12 @@ $('c-remove').onclick = () => {
 
 /* ============================================================
    Model loading and switching
+   Plan: remembered mode first, then the other mode, then a clean
+   re-download with the remembered mode. Each step is logged.
    ============================================================ */
-loadBtn.onclick = () => {
-  const s = specFromKey(modelSelect.value);
-  loadModel({ spec: s });
-};
-modelSelect.addEventListener('change', () => {
-  const s = specFromKey(modelSelect.value);
+loadBtn.onclick = () => loadModel({ spec: specFromKey($('model-select').value) });
+$('model-select').addEventListener('change', () => {
+  const s = specFromKey($('model-select').value);
   if (s.kind === 'custom' && !customModels[s.index]) return;
   setStatus(`Selected ${specName(s)}. Press Load.`);
 });
@@ -1225,27 +1280,47 @@ async function loadModel({ spec: target, auto = false } = {}) {
   progressBar.style.display = 'block';
   progressFill.style.width = '0%';
 
-  let lastErr = null;
+  const id = specModelId(want);
+  const first = modeFor(id);
+  const other = first === 'worker' ? 'main' : 'worker';
+  const plan = [
+    { mode: first },
+    { mode: other },
+    { mode: first, clear: true },
+  ];
+  const errors = [];
+  let loaded = null, usedMode = null;
+
   try {
     await checkWebGPU();
-    if (engine) { try { await engine.unload(); } catch {} engine = null; }
-
-    for (let attempt = 1; attempt <= 3 && !engine; attempt++) {
+    for (let i = 0; i < plan.length && !loaded; i++) {
+      const step = plan[i];
+      if (step.clear) {
+        setStatus('Clearing the saved files for this model and downloading again…');
+        await clearModelCache(want);
+      }
+      await unloadEngine();
       try {
-        setStatus(attempt > 1 ? `Retrying (${attempt}/3)…` : `Loading ${specName(want)}…`);
+        const label = step.mode === 'worker' ? 'background worker' : 'main thread';
+        setStatus(i === 0 ? `Loading ${specName(want)} (${label})…` : `Retrying ${specName(want)} (${label})…`);
         progressFill.style.width = '0%';
-        engine = await createEngine(want, p => {
+        loaded = await buildEngine(want, step.mode, p => {
           setStatus(p.text);
-          progressFill.style.width = `${Math.round(p.progress * 100)}%`;
+          progressFill.style.width = `${Math.round((p.progress || 0) * 100)}%`;
         });
+        usedMode = step.mode;
       } catch (err) {
-        lastErr = err;
-        console.warn(`Load attempt ${attempt} failed:`, err);
-        engine = null;
-        if (attempt < 3) await sleep(1500);
+        const msg = err?.message || String(err);
+        errors.push(`${step.mode}${step.clear ? ' after cache clear' : ''}: ${msg}`);
+        console.warn('Load attempt failed:', step, err);
+        await unloadEngine();
+        await sleep(800);
       }
     }
-    if (!engine) throw lastErr || new Error('Model failed to load.');
+    if (!loaded) throw new Error(errors.join('\n'));
+
+    engine = loaded;
+    rememberMode(id, usedMode);
 
     if (currentSpec && specKey(currentSpec) !== specKey(want)) prevSpec = currentSpec;
     currentSpec = want;
@@ -1264,21 +1339,29 @@ async function loadModel({ spec: target, auto = false } = {}) {
     }
   } catch (err) {
     progressBar.style.display = 'none';
-    const msg = err?.message || String(err);
     if (auto && specKey(want) !== specKey(DEFAULT_SPEC)) {
       loading = false;
       loadBtn.disabled = false;
       setStatus(`Could not load ${specName(want)}. Trying the default model…`);
       return loadModel({ spec: DEFAULT_SPEC, auto: true });
     }
-    setStatus(`❌ ${msg} (press Load to retry)`);
-    if (currentSpec) { setInputEnabled(true); }
+    addErrorStatus(`Could not load ${specName(want)}:\n${err.message || err}`);
+    if (currentSpec) setInputEnabled(true);
   } finally {
     loading = false;
     loadBtn.disabled = false;
     updateButtons();
     updatePrevButton();
   }
+}
+
+function addErrorStatus(text) {
+  setStatus(`❌ Load failed (press Load to retry)`);
+  hideEmpty();
+  const wrap = el('div', 'msg ai');
+  wrap.appendChild(el('div', 'error', `⚠️ ${text}\n\nTips: close other GPU-heavy tabs, try Qwen 3.5 0.8B again (the download is now cached), or pick another model from the menu.`));
+  chat.appendChild(wrap);
+  scrollToBottom();
 }
 
 /* ============================================================
@@ -1532,18 +1615,21 @@ async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048, live
     }
   };
 
-  await pump(messages, maxTokens, guard);
-  if (cut && !stopRequested) {
-    try { engine.interruptGenerate(); } catch {}
-    await sleep(80);
-    prefix = full() + '\n</think>\n\n';
-    buf = '';
+  try {
+    await pump(messages, maxTokens, guard);
+    if (cut && !stopRequested) {
+      try { engine.interruptGenerate(); } catch {}
+      await sleep(80);
+      prefix = full() + '\n</think>\n\n';
+      buf = '';
+      implicitThink = false;
+      await pump(buildMessages(true), 400, false);
+    }
+  } finally {
+    if (frame) cancelAnimationFrame(frame);
     implicitThink = false;
-    await pump(buildMessages(true), 400, false);
   }
-  if (frame) cancelAnimationFrame(frame);
   if (stopRequested) { try { engine.interruptGenerate(); } catch {} }
-  implicitThink = false;
   return full();
 }
 
@@ -1554,7 +1640,6 @@ async function answerWithEvidence(wrapper, turn, question, items, evidence, term
   const seg = createSegment(wrapper, evidence ? 'Writing answer' : 'Answering');
   const raw = await streamOnce(seg, answerMessages(question, evidence, !evidence), { mode: 'answer', maxTokens: 320, live: false });
   seg.el.remove();
-
   const n = items.length;
   let answer = cleanAnswer(splitFinal(raw).visible, n);
   const ok = answer && !isDegenerate(answer) && (!n || answersQuestion(answer, terms));
@@ -1686,7 +1771,7 @@ async function sendMessage() {
 }
 
 /* ============================================================
-   Start up: open the last chat, show the model menu, auto-load
+   Start up
    ============================================================ */
 active = chats[0] ?? blankChat();
 renderModelSelect();
