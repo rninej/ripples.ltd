@@ -9,7 +9,6 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; }
 body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #fff; overflow: hidden; background: #1e1b4b; }
-
 .bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #6d28d9 60%, #be185d 85%, #0ea5e9 120%); }
 .orb { position: absolute; width: 55vmax; height: 55vmax; border-radius: 50%; animation: drift 24s ease-in-out infinite alternate; will-change: transform; }
 .orb.a { background: radial-gradient(circle, rgba(56,189,248,.55), rgba(56,189,248,0) 65%); top: -20vmax; left: -15vmax; }
@@ -17,12 +16,9 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .orb.c { background: radial-gradient(circle, rgba(167,139,250,.4), rgba(167,139,250,0) 65%); top: 30%; left: 35%; animation-duration: 32s; }
 @keyframes drift { to { transform: translate(4vmax, 3vmax) scale(1.06); } }
 @media (prefers-reduced-motion: reduce) { .orb { animation: none; } }
-
 .glass { background: rgba(255,255,255,.14); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(8,6,30,.3), inset 0 1px 0 rgba(255,255,255,.25); border-radius: 22px; }
-
 .layout { position: relative; z-index: 1; height: 100%; display: flex; gap: 12px; padding: 14px; max-width: 1200px; margin: 0 auto; }
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
-
 .side { width: 250px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; padding: 14px; min-height: 0; }
 .side-top { display: flex; gap: 6px; }
 .side-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.55); padding: 0 4px; }
@@ -36,7 +32,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .side-item button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: .85rem; padding: 2px 5px; border-radius: 6px; }
 .side-item button:hover { color: #fecdd3; background: rgba(244,63,94,.25); }
 .empty-note { font-size: .8rem; color: rgba(255,255,255,.55); padding: 4px; }
-
 .btn { border: 1px solid var(--border); background: rgba(255,255,255,.16); color: #fff; padding: .65rem 1.05rem; border-radius: 14px; font: inherit; font-weight: 600; font-size: .88rem; cursor: pointer; white-space: nowrap; transition: background .2s, opacity .2s; }
 .btn:hover:not(:disabled) { background: rgba(255,255,255,.28); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
@@ -45,13 +40,16 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .btn.grow { flex: 1; }
 .btn.icon { padding: .65rem .8rem; }
 .side-toggle { display: none; }
-
 .header { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .title-row { display: flex; align-items: center; gap: 10px; }
 .title { font-size: 1.15rem; font-weight: 650; white-space: nowrap; }
 #status { font-size: .82rem; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; }
 .model-field { flex: 1; min-width: 200px; display: flex; gap: 8px; }
+.field { flex: 1; min-width: 200px; }
+input.txt { width: 100%; padding: .7rem .9rem; background: rgba(255,255,255,.12); border: 1px solid var(--border); border-radius: 14px; color: #fff; font: inherit; font-size: .9rem; outline: none; }
+input.txt::placeholder { color: rgba(255,255,255,.55); }
+input.txt:focus { background: rgba(255,255,255,.2); box-shadow: 0 0 0 3px var(--glow); }
 #model-input { flex: 1; min-width: 0; padding: .7rem .9rem; background: rgba(255,255,255,.12); border: 1px solid var(--border); border-radius: 14px; color: #fff; font: inherit; font-size: .9rem; outline: none; }
 #model-input::placeholder { color: rgba(255,255,255,.55); }
 #model-input:focus { background: rgba(255,255,255,.2); box-shadow: 0 0 0 3px var(--glow); }
@@ -62,7 +60,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .progress { height: 6px; border-radius: 3px; background: rgba(255,255,255,.18); overflow: hidden; display: none; }
 #progress-fill { height: 100%; width: 0%; transition: width .3s; background: linear-gradient(90deg, #4ade80, #22c55e); }
 .hint { font-size: .74rem; color: rgba(255,255,255,.6); line-height: 1.5; }
-
 .chat { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,.07); border: 1px solid var(--border); border-radius: 22px; overscroll-behavior: contain; }
 .chat::-webkit-scrollbar { width: 8px; }
 .chat::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 8px; }
@@ -75,8 +72,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .answer code { background: rgba(0,0,0,.25); padding: 1px 6px; border-radius: 6px; font-size: .88em; font-family: ui-monospace, Menlo, monospace; }
 .answer a { color: #bfdbfe; text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
 .segment + .segment { margin-top: 10px; }
-.segment .answer + .answer { margin-top: 8px; }
-
 .actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 .act { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: var(--muted); border-radius: 999px; padding: 4px 11px; font: inherit; font-size: .74rem; cursor: pointer; }
 .act:hover { background: rgba(255,255,255,.22); color: #fff; }
@@ -84,7 +79,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .srcs-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.55); }
 .src { font-size: .8rem; color: #bfdbfe; text-decoration: none; overflow-wrap: anywhere; }
 .src:hover { text-decoration: underline; }
-
 .pending { display: flex; align-items: center; gap: 12px; padding: 4px 2px; }
 .skel { display: flex; flex-direction: column; gap: 7px; width: 120px; }
 .skel i { display: block; height: 8px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.45), rgba(255,255,255,.12)); background-size: 200% 100%; animation: sweep 1.4s linear infinite; }
@@ -96,7 +90,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .dots i:nth-child(2) { animation-delay: .15s; }
 .dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes bob { 0%, 80%, 100% { transform: translateY(0); opacity: .4; } 40% { transform: translateY(-6px); opacity: 1; } }
-
 .think { margin-bottom: 10px; border-radius: 14px; overflow: hidden; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.14); }
 .think-head { width: 100%; display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: none; border: 0; color: var(--muted); font: inherit; font-size: .84rem; cursor: pointer; text-align: left; }
 .think-head:hover { color: #fff; background: rgba(255,255,255,.06); }
@@ -106,7 +99,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 @keyframes pulse { 50% { opacity: .35; } }
 .think-body { display: none; padding: 10px 12px 12px; max-height: 260px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,.1); font-size: .83rem; font-style: italic; line-height: 1.5; color: rgba(255,255,255,.7); white-space: pre-wrap; }
 .think-body.open { display: block; }
-
 .tool { margin: 6px 0 10px; border-radius: 14px; overflow: hidden; font-size: .84rem; background: rgba(59,130,246,.16); border: 1px solid rgba(96,165,250,.35); }
 .tool-head { width: 100%; display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: none; border: 0; color: #bfdbfe; font: inherit; font-weight: 600; font-size: .84rem; cursor: pointer; text-align: left; }
 .tool-head:hover { background: rgba(255,255,255,.06); }
@@ -117,7 +109,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(191,219,254,.3); border-top-color: #bfdbfe; animation: spin .8s linear infinite; flex-shrink: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error { color: #fecdd3; background: rgba(244,63,94,.18); border: 1px solid rgba(244,63,94,.4); border-radius: 12px; padding: 10px 12px; font-size: .88rem; }
-
 .composer { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .attach-chip { display: none; align-items: center; gap: 8px; width: fit-content; padding: 6px 8px 6px 6px; border-radius: 12px; background: rgba(255,255,255,.14); font-size: .8rem; color: var(--muted); }
 .attach-chip.on { display: flex; }
@@ -134,7 +125,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 #stop-btn { height: 48px; display: none; }
 #stop-btn.visible { display: inline-block; }
 .counter { font-size: .72rem; color: rgba(255,255,255,.5); padding: 0 4px; }
-
 .modal-overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; background: rgba(10,8,30,.5); }
 .modal-overlay.visible { display: flex; }
 .modal { max-width: 380px; width: calc(100% - 40px); padding: 26px; text-align: center; background: rgba(40,30,90,.85); border-radius: 22px; }
@@ -142,7 +132,6 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
 .modal p { color: var(--muted); line-height: 1.5; margin-bottom: 20px; font-size: .92rem; }
 .modal-buttons { display: flex; gap: 10px; justify-content: center; }
 .modal-buttons .btn { min-width: 110px; }
-
 @media (max-width: 760px) {
   .layout { padding: 8px; gap: 8px; }
   .side { position: fixed; left: 8px; top: 8px; bottom: 8px; width: min(280px, 80vw); z-index: 20; transform: translateX(-120%); transition: transform .3s ease; }
@@ -180,12 +169,17 @@ body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI'
         </div>
         <button class="btn danger" id="reset-btn">🔄 Reset</button>
       </div>
+      <div class="row">
+        <div class="field">
+          <input id="api-key" class="txt" type="password" placeholder="Optional: Brave Search API key (improves search)" autocomplete="off">
+        </div>
+      </div>
       <div class="toggles">
         <div class="toggle" id="toggle-tools">🧰 Tools &amp; search</div>
         <div class="toggle" id="toggle-thinking">💭 Thinking</div>
       </div>
       <div class="progress" id="progress-bar"><div id="progress-fill"></div></div>
-      <div class="hint">Time, date and arithmetic are answered by the app. Current or factual questions are searched across several sources and Wikipedia, and the answer shows its sources. "Thinking" holds the model's reasoning only. Enter sends, Shift+Enter adds a line, Esc stops, Ctrl/Cmd+K starts a new chat.</div>
+      <div class="hint">Time, date and arithmetic are answered by the app. Current or factual questions are searched and checked for relevance. If nothing relevant is found, the app says so and lists the sources it checked. Enter sends, Shift+Enter adds a line, Esc stops, Ctrl/Cmd+K starts a new chat.</div>
     </header>
 
     <main class="chat" id="chat">
@@ -414,16 +408,16 @@ const fmtNum = v => Number(v.toPrecision(12)).toLocaleString('en-GB', { maximumF
 /* ============================================================
    Routing: decided in code
    ============================================================ */
-const FRESH_RE = /\b(current|currently|latest|today|tonight|tomorrow|right now|recent|recently|newest|this (?:week|month|year)|price|prices|cost|net worth|worth|salary|income|news|headlines|score|scores|weather|forecast|stock|shares|exchange rate|who is the|who's the|who runs|ceo|president|prime minister|chancellor|king|election|released|release date|just announced|as of|last (?:week|month|year)|still|now|best|top\s*\d+|top ten|ranking|rankings|rank|list of|compare|versus|vs|cheapest|worst|most popular|population|how many|how much|founded|born|died|age|202\d|203\d|phone|phones|laptop|laptops|car|cars|model|models|app|apps|game|games|movie|movies|film|films|album|song|restaurant|restaurants|hotel|hotels|flight|flights)\b/i;
+const FRESH_RE = /\b(current|currently|latest|today|tonight|tomorrow|right now|recent|recently|newest|this (?:week|month|year)|price|prices|cost|net worth|worth|salary|income|news|headlines|score|scores|weather|forecast|stock|shares|exchange rate|who is the|who's the|who runs|ceo|president|prime minister|chancellor|king|election|released|release date|just announced|as of|last (?:week|month|year)|still|now|best|top\s*\d+|top ten|ranking|rankings|rank|list of|compare|versus|vs|cheapest|worst|most popular|population|how many|how much|founded|born|died|age|202\d|203\d|phone|phones|laptop|laptops|car|cars|model|models|app|apps|game|games|movie|movies|film|films|album|song|restaurant|restaurants|hotel|hotels|flight|flights|iphone|iphones|android|buy|should i)\b/i;
 const CREATIVE_RE = /\b(write|poem|story|joke|translate|rewrite|summari[sz]e (?:this|the following)|code|function|script|debug|fix my|draft|email|essay|lyrics|recipe|help me|explain (?:how|why)|you|your|yourself|hello|hi|hey|thanks|thank you)\b/i;
 const UNSURE_RE = /(don't|do not|can't|cannot|unable to|not able to) (?:have|access|know|browse|verify|confirm|check)|real-time|up-to-date|as of my|knowledge cutoff|not sure|not certain|i am unable|i'm unable/i;
-const ANSWER_UNSURE_RE = /could not (?:confirm|verify)|cannot (?:confirm|verify)|not able to (?:confirm|verify)/i;
+const ANSWER_UNSURE_RE = /could not (?:confirm|verify|find)|cannot (?:confirm|verify)|not able to (?:confirm|verify)|no (?:reliable|relevant) (?:information|answer)/i;
 
 function shouldSearch(text) {
   const t = text.trim();
   if (FRESH_RE.test(t)) return true;
   if (CREATIVE_RE.test(t)) return false;
-  return /^(who|what|which|where|when|how|is|are|does|do|did|was|were|can|why)\b/i.test(t) && t.split(/\s+/).length >= 3;
+  return /^(who|what|which|where|when|how|is|are|does|do|did|was|were|can|why|should)\b/i.test(t) && t.split(/\s+/).length >= 3;
 }
 
 /* ============================================================
@@ -441,8 +435,8 @@ async function getText(url, ms = 9000) {
   if (!t.trim()) throw new Error('empty response');
   return t;
 }
-async function getJson(url, ms = 8000) {
-  const r = await fetch(url, { signal: AbortSignal.timeout(ms), headers: { Accept: 'application/json' } });
+async function getJson(url, ms = 8000, headers = {}) {
+  const r = await fetch(url, { signal: AbortSignal.timeout(ms), headers: { Accept: 'application/json', ...headers } });
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
@@ -480,11 +474,25 @@ function unwrapGoogle(href) {
 }
 
 /* ============================================================
-   Search sources, run in parallel batches of three
+   Search sources. Optional Brave API first when a key is set,
+   then scraped sources in parallel batches of three.
    ============================================================ */
 const SEARX = ['https://searx.be', 'https://search.sapti.me', 'https://priv.au', 'https://searx.tiekoetter.com', 'https://search.bus-hit.me'];
 
-const SOURCES = [
+const BRAVE_API = {
+  name: 'Brave API',
+  run: async q => {
+    const key = getApiKey();
+    const d = await getJson(`https://api.search.brave.com/res/v1/web/search?q=${enc(q)}&count=10`, 9000, { 'X-Subscription-Token': key });
+    return (d.web?.results || []).map(x => ({
+      title: cleanText(x.title),
+      url: x.url,
+      snippet: cleanText((x.description || '').replace(/<[^>]*>/g, '')),
+    }));
+  },
+};
+
+const SCRAPED = [
   {
     name: 'DuckDuckGo',
     run: async q => {
@@ -505,17 +513,6 @@ const SOURCES = [
         if (!a) return null;
         return { title: cleanText(a.textContent), url: unwrapBing(a.getAttribute('href') || ''), snippet: cleanText(e.querySelector('.b_caption p, p')?.textContent) };
       }).filter(Boolean);
-    },
-  },
-  {
-    name: 'Bing RSS',
-    run: async q => {
-      const doc = parseXml(await anyText(`https://www.bing.com/search?q=${enc(q)}&format=rss`));
-      return [...doc.querySelectorAll('item')].map(it => ({
-        title: cleanText(it.querySelector('title')?.textContent),
-        url: unwrapBing(cleanText(it.querySelector('link')?.textContent)),
-        snippet: cleanText(it.querySelector('description')?.textContent),
-      }));
     },
   },
   {
@@ -561,18 +558,6 @@ const SOURCES = [
     },
   },
   {
-    name: 'DuckDuckGo Instant',
-    run: async q => {
-      const d = await getJson(`https://api.duckduckgo.com/?q=${enc(q)}&format=json&no_html=1&skip_disambig=1`);
-      const out = [];
-      if (d.AbstractURL && d.AbstractText) out.push({ title: d.Heading || q, url: d.AbstractURL, snippet: cleanText(d.AbstractText) });
-      for (const t of d.RelatedTopics || []) {
-        for (const it of (t.Topics || [t])) if (it.FirstURL && it.Text) out.push({ title: it.Text.slice(0, 100), url: it.FirstURL, snippet: it.Text });
-      }
-      return out;
-    },
-  },
-  {
     name: 'Wikipedia search',
     run: async q => {
       const d = await getJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${enc(q)}&srlimit=8&format=json&origin=*`);
@@ -585,6 +570,9 @@ const SOURCES = [
   },
 ];
 
+const getApiKey = () => { try { return (localStorage.getItem(API_KEY_STORE) || '').trim(); } catch { return ''; } };
+const activeSources = () => (getApiKey() ? [BRAVE_API, ...SCRAPED] : SCRAPED);
+
 function dedupe(results) {
   const seen = new Set();
   return results.filter(r => {
@@ -595,56 +583,61 @@ function dedupe(results) {
 }
 
 /* ============================================================
-   Keywords, ranking
+   Keywords
    ============================================================ */
 const STOP = new Set(('the a an of in on at to for and or is are was were be by with from what whats how who when where which ' +
-  'does do did its it this that top me my i tell please give current currently latest now today right can you about will much ' +
-  'many could should would there their they he she ok okay hey hi thanks know want need look find show').split(' '));
+  'does do did its it this that me my i tell please give current currently latest now today right can you about will much ' +
+  'many could should would there their they he she ok okay hey hi thanks know want need look find show why buy when ' +
+  'been has have had released release just any some more most').split(' '));
 
-/* Plurals and possessives are reduced to a stem so "musks" still matches "Musk" */
+/* Content words only. Plurals are reduced so "phones" matches "phone". */
 function keywords(q) {
   const words = q.toLowerCase().replace(/'s\b/g, '').replace(/[^a-z0-9.\s-]/g, ' ').split(/\s+/)
     .map(w => w.replace(/^[.\-]+|[.\-]+$/g, ''))
     .filter(w => w.length > 1 && !STOP.has(w) && !/^20\d\d$/.test(w))
     .map(w => (w.length > 4 && w.endsWith('s') && !w.endsWith('ss')) ? w.slice(0, -1) : w);
-  return [...new Set(words)];
+  const terms = [...new Set(words)];
+  return { terms, query: terms.join(' ') };
 }
 
-function rankResults(results, kws, need = Math.min(2, kws.length)) {
+/* How many of the terms a piece of text contains */
+const hitCount = (text, terms) => {
+  const low = text.toLowerCase();
+  return terms.filter(t => low.includes(t)).length;
+};
+const needFor = (n, ratio) => Math.max(1, Math.ceil(n * ratio));
+
+/* A search result is kept only if its title, address or snippet covers most of the question */
+function relevantResults(results, terms) {
+  const need = needFor(terms.length, 0.5);
   return results
-    .map(r => {
-      const hay = `${r.title} ${r.snippet}`.toLowerCase();
-      return { ...r, hits: kws.filter(k => hay.includes(k)).length };
-    })
-    .filter(r => r.hits > 0 && r.hits >= need)
+    .map(r => ({ ...r, hits: hitCount(`${r.title} ${r.url} ${r.snippet}`, terms) }))
+    .filter(r => r.hits >= need)
     .sort((a, b) => b.hits - a.hits);
 }
 
-async function searchWeb(query, kws, onStep = () => {}) {
+async function searchWeb(query, terms, onStep = () => {}) {
   const tried = [];
-  const allRaw = [];
-  let best = null;
-  for (let i = 0; i < SOURCES.length; i += 3) {
-    const batch = SOURCES.slice(i, i + 3);
+  const sources = activeSources();
+  for (let i = 0; i < sources.length; i += 3) {
+    const batch = sources.slice(i, i + 3);
     onStep(`trying ${batch.map(s => s.name).join(', ')}…`);
     const outs = await Promise.allSettled(batch.map(s =>
       withTimeout(s.run(query), 10000).then(raw => ({ name: s.name, raw: dedupe(raw) }))));
+    const good = [];
     for (const o of outs) {
       if (o.status !== 'fulfilled') { tried.push('failed'); continue; }
-      const ranked = rankResults(o.value.raw, kws);
-      tried.push(`${o.value.name} ${ranked.length}/${o.value.raw.length}`);
-      allRaw.push(...o.value.raw);
-      if (ranked.length && (!best || ranked.length > best.results.length)) best = { source: o.value.name, results: ranked };
+      const rel = relevantResults(o.value.raw, terms);
+      tried.push(`${o.value.name} ${rel.length}/${o.value.raw.length}`);
+      if (rel.length) good.push(...rel.map(r => ({ ...r, source: o.value.name })));
     }
-    if (best && best.results.length >= 3) return { ...best, tried };
+    if (good.length >= 3) return { results: good, tried };
   }
-  if (best) return { ...best, tried };
-  const loose = rankResults(allRaw, kws, 1).slice(0, 6);
-  return { source: loose.length ? 'mixed sources' : null, results: loose, tried };
+  return { results: [], tried };
 }
 
 /* ============================================================
-   Wikipedia: search, then read the article text
+   Wikipedia: search, then read the article
    ============================================================ */
 async function wikiPages(query) {
   const d = await getJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${enc(query)}&srlimit=4&format=json&origin=*`, 8000);
@@ -661,8 +654,15 @@ async function wikiPages(query) {
 }
 
 /* ============================================================
-   EVIDENCE CLEANING AND SENTENCE PICKING
+   EVIDENCE: cleaning and strict sentence picking
    ============================================================ */
+function cleanTitle(t) {
+  return cleanText((t || '')
+    .replace(/^\s*Title:\s*/i, '')
+    .split(/\s+[|–—]\s+|\s+-\s+/)[0]
+    .replace(/\s*\((Wikipedia|wiki)\)\s*$/i, ''));
+}
+
 /* Removes citation markers, wiki reference notes, links and URLs */
 function cleanEvidence(s) {
   return (s || '')
@@ -671,6 +671,7 @@ function cleanEvidence(s) {
     .replace(/cite_(?:note|ref)\S*/g, ' ')
     .replace(/\[\[?\s*\d{1,4}\s*\]?\]/g, ' ')
     .replace(/\[(?:note|edit|citation needed|clarification needed|better source)[^\]]*\]/gi, ' ')
+    .replace(/^\s*Title:\s*/gim, '')
     .replace(/\*\*|__|`/g, '')
     .replace(/\s+/g, ' ')
     .trim();
@@ -692,66 +693,64 @@ function passages(text) {
   return out;
 }
 
-function scoreSentence(s, kws, bigrams, need) {
-  const low = s.toLowerCase();
-  let hits = 0;
-  for (const k of kws) if (low.includes(k)) hits++;
-  if (hits < need) return 0;
-  let sc = hits;
-  for (const b of bigrams) if (low.includes(b)) sc += 3;
-  if (/\d/.test(s)) sc += 1;
-  if (/billion|million|trillion|percent|%|\$|€|£/i.test(s)) sc += 2;
-  if (/\b20[12]\d\b/.test(s)) sc += 1;
-  return sc;
-}
-
-function pickSentences(text, kws, max = 4) {
-  if (!kws.length) return [];
+/* A sentence is used only if it contains most of the question's terms */
+function pickSentences(text, terms, max = 3) {
+  if (!terms.length) return [];
+  const need = needFor(terms.length, 0.6);
   const bigrams = [];
-  for (let i = 0; i < kws.length - 1; i++) bigrams.push(`${kws[i]} ${kws[i + 1]}`);
-  const need = Math.min(2, kws.length);
+  for (let i = 0; i < terms.length - 1; i++) bigrams.push(`${terms[i]} ${terms[i + 1]}`);
   return passages(text)
-    .map(s => ({ s, sc: scoreSentence(s, kws, bigrams, need) }))
+    .map(s => {
+      const hits = hitCount(s, terms);
+      if (hits < need) return { s, sc: 0 };
+      const low = s.toLowerCase();
+      let sc = hits;
+      for (const b of bigrams) if (low.includes(b)) sc += 2;
+      if (/\d/.test(s)) sc += 1;
+      return { s, sc };
+    })
     .filter(x => x.sc > 0)
     .sort((a, b) => b.sc - a.sc)
     .slice(0, max)
     .map(x => x.s);
 }
 
-async function readResult(r, kws) {
+async function readResult(r, terms) {
   let ex = [];
-  try { ex = pickSentences(await withTimeout(pageText(r.url), 10000), kws, 3); } catch {}
-  if (!ex.length && r.snippet && kws.some(k => r.snippet.toLowerCase().includes(k))) {
-    ex = passages(r.snippet).slice(0, 2);
+  try { ex = pickSentences(await withTimeout(pageText(r.url), 10000), terms, 3); } catch {}
+  if (!ex.length && r.snippet) {
+    ex = passages(r.snippet).filter(s => hitCount(s, terms) >= needFor(terms.length, 0.6)).slice(0, 2);
   }
-  return { title: cleanEvidence(r.title), url: r.url, excerpts: ex };
+  return { title: cleanTitle(r.title), url: r.url, excerpts: ex };
 }
 
 /* ============================================================
-   Research: Wikipedia first, then the web. Returns numbered items.
+   Research: Wikipedia first, then the web. Only relevant items are kept.
    ============================================================ */
 async function research(question, box) {
-  const kws = keywords(question);
-  const base = kws.join(' ') || question.trim();
-  const yearQ = /\b20\d\d\b/.test(base) ? base : `${base} ${new Date().getFullYear()}`;
-  const found = [];
+  const { terms, query } = keywords(question);
   const tried = [];
+  if (!terms.length) return { items: [], evidence: '', tried, terms };
+
+  const yearQ = /\b20\d\d\b/.test(query) ? query : `${query} ${new Date().getFullYear()}`;
+  const found = [];
 
   box?.setTitle?.('checking Wikipedia…');
-  const wikis = await withTimeout(wikiPages(base), 12000).catch(() => []);
+  const wikis = await withTimeout(wikiPages(query), 12000).catch(() => []);
   for (const w of wikis) {
-    const ex = pickSentences(w.text, kws, 4);
+    if (hitCount(w.title, terms) < 1) { tried.push(`Wikipedia ${w.title}: off-topic`); continue; }
+    const ex = pickSentences(w.text, terms, 3);
     tried.push(`Wikipedia ${w.title}: ${ex.length}`);
-    if (ex.length) found.push({ title: `${w.title} (Wikipedia)`, url: w.url, excerpts: ex, score: ex.length + 1 });
+    if (ex.length) found.push({ title: `${cleanTitle(w.title)} (Wikipedia)`, url: w.url, excerpts: ex, score: ex.length + 1 });
   }
 
-  for (const q of [...new Set([yearQ, base])]) {
+  for (const q of [...new Set([yearQ, query])]) {
     if (found.length >= 4) break;
-    const s = await searchWeb(q, kws, step => box?.setTitle?.(step));
+    const s = await searchWeb(q, terms, step => box?.setTitle?.(step));
     tried.push(...s.tried.map(t => `${t} [${q}]`));
     if (!s.results.length) continue;
-    box?.setTitle?.(`reading ${s.results.length} results…`);
-    const pages = await Promise.all(s.results.slice(0, 4).map(r => readResult(r, kws)));
+    box?.setTitle?.(`reading ${s.results.length} relevant results…`);
+    const pages = await Promise.all(s.results.slice(0, 4).map(r => readResult(r, terms)));
     for (const p of pages) if (p.excerpts.length) found.push({ ...p, score: p.excerpts.length });
   }
 
@@ -766,7 +765,7 @@ async function research(question, box) {
     ? `Search date: ${todayStr()}\n\n` + items.map(it =>
         `[${it.n}] ${it.title}\n${it.excerpts.map(e => `- ${e.slice(0, 350)}`).join('\n')}`).join('\n\n')
     : '';
-  return { items, evidence, tried, query: yearQ };
+  return { items, evidence, tried, terms };
 }
 
 /* ============================================================
@@ -784,10 +783,8 @@ const TOOL_LABEL = {
 async function runTool(call, onStep = () => {}) {
   switch (call.name) {
     case 'fetch_url': {
-      try {
-        const txt = cleanEvidence(await pageText(call.args.url));
-        return `Page text: ${txt.slice(0, 1500)}`;
-      } catch (e) { return `Could not read that page: ${e.message}`; }
+      try { return `Page text: ${cleanEvidence(await pageText(call.args.url)).slice(0, 1500)}`; }
+      catch (e) { return `Could not read that page: ${e.message}`; }
     }
     case 'wikipedia': {
       const pages = await wikiPages(call.args.topic).catch(() => []);
@@ -803,7 +800,7 @@ async function runTool(call, onStep = () => {}) {
     }
     case 'web_search': {
       const r = await research(call.args.query, { setTitle: onStep });
-      return r.evidence || 'No matching sources were found.';
+      return r.evidence || 'No relevant sources were found.';
     }
     default: return 'Unknown tool.';
   }
@@ -854,9 +851,8 @@ function extractToolCalls(text) {
 }
 
 /* ============================================================
-   Output checking: the app verifies the model's text before showing it
+   Output checking
    ============================================================ */
-/* Splits finished output into reasoning and visible answer. Only real reasoning counts as thinking. */
 function splitFinal(raw) {
   let thinking = '', visible = raw;
   const pair = raw.match(/<think>([\s\S]*?)<\/think>/);
@@ -875,11 +871,11 @@ function splitFinal(raw) {
   return { thinking, visible: visible.replace(/<\/?think>/g, '').trim() };
 }
 
-/* Removes tool syntax, raw links and invalid citation numbers */
 function cleanAnswer(t, n = 0) {
   return (t || '')
     .replace(/<tool_call>[\s\S]*?(<\/tool_call>|$)/g, '')
     .replace(/https?:\/\/\S+/g, '')
+    .replace(/^\s*Title:\s*/gim, '')
     .replace(/\[\[?\s*\d{1,4}\s*\]?\]/g, m => {
       const d = parseInt(m.replace(/\D/g, ''), 10);
       return d >= 1 && d <= n ? `[${d}]` : '';
@@ -890,11 +886,10 @@ function cleanAnswer(t, n = 0) {
     .trim();
 }
 
-/* Detects runaway output: repeated phrases, cite loops, leaked markup */
 function isDegenerate(t) {
   if (!t) return true;
-  if (t.length > 1400) return true;
-  if (/cite_note|\[\[|wikipedia\.org|<\/?think>|<tool_call/i.test(t)) return true;
+  if (t.length > 1200) return true;
+  if (/cite_note|\[\[|wikipedia\.org|<\/?think>|<tool_call|Title:/i.test(t)) return true;
   const words = t.toLowerCase().split(/\s+/);
   const seen = new Map();
   for (let i = 0; i + 5 <= words.length; i++) {
@@ -903,19 +898,13 @@ function isDegenerate(t) {
     seen.set(g, c);
     if (c >= 3) return true;
   }
-  if ((t.match(/\[\d+\]/g) || []).length > 8) return true;
-  return false;
+  return (t.match(/\[\d+\]/g) || []).length > 8;
 }
 
-/* Builds a plain, accurate answer from the source sentences when the model's text is unusable */
-function fallbackAnswer(items) {
-  const all = items.flatMap(it => it.excerpts.map(e => ({ e, n: it.n })));
-  if (!all.length) return '';
-  const best = all.find(x => /\d/.test(x.e)) || all[0];
-  const rest = all.filter(x => x !== best).slice(0, 3);
-  let out = `**Best match in the sources:** ${best.e} [${best.n}]`;
-  if (rest.length) out += `\n\n**More from the sources:**\n` + rest.map(x => `• ${x.e} [${x.n}]`).join('\n');
-  return out;
+/* The answer must use the question's terms, or honestly say it could not confirm */
+function answersQuestion(answer, terms) {
+  if (ANSWER_UNSURE_RE.test(answer)) return true;
+  return hitCount(answer, terms) >= needFor(terms.length, 0.5);
 }
 
 /* ============================================================
@@ -926,6 +915,7 @@ const statusEl = $('status'), progressBar = $('progress-bar'), progressFill = $(
 const chat = $('chat'), chatEmpty = $('chat-empty'), counter = $('counter');
 const userInput = $('user-input'), sendBtn = $('send-btn'), stopBtn = $('stop-btn');
 const resetBtn = $('reset-btn'), modelInput = $('model-input'), loadBtn = $('load-btn');
+const apiKeyInput = $('api-key');
 const toggleTools = $('toggle-tools'), toggleThinking = $('toggle-thinking');
 const fileInput = $('file-input'), fileBtn = $('file-btn');
 const attachChip = $('attach-chip'), attachThumb = $('attach-thumb'), attachName = $('attach-name'), attachClear = $('attach-clear');
@@ -935,12 +925,13 @@ const sideEl = $('side'), sideList = $('side-list'), newChatBtn = $('new-chat'),
 const STORE_KEY = 'webllm-chats-v2';
 const MODEL_KEY = 'webllm-model-v2';
 const PREF_KEY = 'webllm-prefs-v1';
+const API_KEY_STORE = 'webllm-brave-key';
 const MAX_HISTORY = 12;
 const THINK_LIMIT = 1200;
 
 let engine = null, currentModel = null, worker = null;
 let loading = false, isGenerating = false, stopRequested = false;
-let implicitThink = false;   // Qwen3 can start reasoning without an opening tag
+let implicitThink = false;
 let pendingImage = null;
 
 const prefs = (() => {
@@ -986,7 +977,7 @@ async function checkWebGPU() {
   if (!adapter) throw new Error('No WebGPU adapter found on this device.');
 }
 
-/* Live split while streaming. Unclosed text counts as reasoning only when Qwen3 may be reasoning. */
+/* Live split while streaming */
 function splitLive(raw) {
   let thinkText = null, thinkClosed = false, visible = raw;
   const open = raw.indexOf('<think>');
@@ -1139,11 +1130,17 @@ function clearAttachment() {
 }
 
 /* ============================================================
-   Toggles, attachments, stop, reset
+   Toggles, key, attachments, stop, reset
    ============================================================ */
 toggleTools.onclick = () => { toolsEnabled = !toolsEnabled; paintToggles(); savePrefs(); };
 toggleThinking.onclick = () => { thinkingEnabled = !thinkingEnabled; paintToggles(); savePrefs(); };
 paintToggles();
+
+apiKeyInput.value = getApiKey();
+apiKeyInput.addEventListener('change', () => {
+  try { localStorage.setItem(API_KEY_STORE, apiKeyInput.value.trim()); } catch {}
+  setStatus(apiKeyInput.value.trim() ? 'Search API key saved.' : 'Search API key removed.');
+});
 
 fileBtn.onclick = () => {
   if (!currentModel || !isVisionModel(currentModel)) {
@@ -1304,7 +1301,6 @@ function addStaticBody(wrapper, text) {
   return body;
 }
 
-/* Thinking box: live while the model reasons, collapsed and re-openable afterwards */
 function makeThink() {
   const box = el('div', 'think');
   const head = el('button', 'think-head');
@@ -1374,7 +1370,6 @@ function sourcesBlock(sources) {
   return box;
 }
 
-/* Saved assistant message */
 function addAnswer(m, isLast) {
   hideEmpty();
   const wrap = el('div', 'msg ai');
@@ -1388,7 +1383,6 @@ function addAnswer(m, isLast) {
   scrollToBottom();
 }
 
-/* Once a turn finishes: sources and actions go under the answer */
 function finishTurn(wrapper, turn) {
   chat.querySelectorAll('.regen').forEach(b => b.remove());
   if (turn.sources.length) wrapper.appendChild(sourcesBlock(turn.sources));
@@ -1409,7 +1403,6 @@ function regenerate() {
   sendMessage();
 }
 
-/* A segment is one model output. Its loader shows at once and is removed on the first token. */
 function createSegment(wrapper, label = 'Thinking') {
   const e = el('div', 'segment');
   e.innerHTML = `
@@ -1424,7 +1417,6 @@ function createSegment(wrapper, label = 'Thinking') {
 }
 function removePending(seg) { seg.pending?.remove(); seg.pending = null; }
 
-/* Live rendering while streaming */
 function renderLive(seg, raw) {
   const f = splitLive(raw);
   if (f.thinkText !== null && (f.thinkText || !f.thinkClosed)) {
@@ -1442,7 +1434,6 @@ function renderLive(seg, raw) {
   }
 }
 
-/* Final rendering of a finished segment: reasoning stays in its box, the answer is cleaned */
 function finishSeg(seg, raw) {
   removePending(seg);
   const f = splitFinal(raw);
@@ -1466,7 +1457,7 @@ function finishSeg(seg, raw) {
   return { thinking: f.thinking, text };
 }
 
-/* Tool box: collapsed by default. Shows the search log and sources when opened. */
+/* Tool box: collapsed by default; opening it shows the search log and evidence */
 function addToolBox(wrapper, label, detail) {
   const base = `${label}${detail ? ': ' + detail : ''}`;
   const box = el('div', 'tool');
@@ -1524,12 +1515,12 @@ function buildMessages(forceAnswer = false) {
 function answerMessages(question, evidence, noEvidence) {
   const common = `Today is ${todayStr()}. Be accurate and concise. Do not show your reasoning. Never write URLs.`;
   const sys = noEvidence
-    ? `${common} The web search found no matching sources. Answer from general knowledge in at most 80 words. ` +
+    ? `${common} No relevant sources were found. Answer from general knowledge in at most 80 words. ` +
       `Begin with "I could not verify this on the web, but from my own knowledge:". If the answer needs live data you cannot know, say so.`
-    : `${common} Answer ONLY from the numbered evidence. Start with the direct answer (the number, name or fact asked for), ` +
-      `then one or two short supporting sentences. Cite like [1] or [2], using only the numbers shown. If the question asks for a list, ` +
-      `list only items that appear in the evidence and say how many you found. If the evidence does not answer it, say ` +
-      `"I could not confirm this from the sources I checked" and name one specific thing to check. Keep it under 100 words.`;
+    : `${common} Answer ONLY from the numbered evidence. Start with the direct answer. If the question asks which is best, ` +
+      `name the item the evidence supports and say why, using only facts in the evidence. If the question asks to compare, ` +
+      `compare only what the evidence says. Then add one or two short supporting sentences, citing like [1] or [2]. ` +
+      `If the evidence does not answer the question, say "I could not confirm this from the sources I checked" and name one specific thing to check. Keep it under 100 words.`;
   let user = noEvidence ? `Question: ${question}` : `Question: ${question}\n\nEvidence:\n${evidence}`;
   if (isQwen3(currentModel)) user += '\n\n/no_think';
   return [{ role: 'system', content: sys }, { role: 'user', content: user }];
@@ -1537,7 +1528,6 @@ function answerMessages(question, evidence, noEvidence) {
 
 /* ============================================================
    Generation
-   live: true shows text as it streams. The thinking guard stops reasoning that runs too long.
    ============================================================ */
 async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048, live = true } = {}) {
   const guard = mode === 'chat' && thinkingEnabled;
@@ -1570,7 +1560,7 @@ async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048, live
   if (cut && !stopRequested) {
     try { engine.interruptGenerate(); } catch {}
     await sleep(80);
-    prefix = full() + '\n</think>\n\n';   // keep the reasoning, then continue with the answer
+    prefix = full() + '\n</think>\n\n';
     buf = '';
     implicitThink = false;
     await pump(buildMessages(true), 400, false);
@@ -1586,25 +1576,22 @@ async function streamOnce(seg, messages, { mode = 'chat', maxTokens = 2048, live
    Turn handlers
    ============================================================ */
 
-/* Writes the answer from evidence. The model's text is checked; the source sentences are the fallback. */
-async function answerWithEvidence(wrapper, turn, question, items, evidence) {
+/* Writes the answer from relevant evidence. The model's text is checked. If it fails the check,
+   the app says it could not confirm the answer and lists the sources. It never shows unrelated lines. */
+async function answerWithEvidence(wrapper, turn, question, items, evidence, terms) {
   const seg = createSegment(wrapper, evidence ? 'Writing answer' : 'Answering');
   const raw = await streamOnce(seg, answerMessages(question, evidence, !evidence), { mode: 'answer', maxTokens: 320, live: false });
   seg.el.remove();
 
   const n = items.length;
   let answer = cleanAnswer(splitFinal(raw).visible, n);
-  const bad = !answer || isDegenerate(answer);
-  if (bad) answer = '';
+  const ok = answer && !isDegenerate(answer) && (!n || answersQuestion(answer, terms));
 
-  if (n && (bad || ANSWER_UNSURE_RE.test(answer))) {
-    const fb = fallbackAnswer(items);
-    answer = answer && !bad ? `${answer}\n\n${fb}` : fb;
-  }
-  if (!answer) {
-    answer = evidence
-      ? 'I could not confirm this from the sources I checked. Try rephrasing, or open a source below.'
-      : 'I could not verify this on the web or from my own knowledge. Try rephrasing or check a reliable source.';
+  if (!ok) {
+    answer = n
+      ? `I could not confirm a clear answer to this from the ${n} source${n > 1 ? 's' : ''} I checked. ` +
+        `Try opening a source below, or rephrase the question with more detail (for example, a specific model name or country).`
+      : 'I could not find relevant information on the web or Wikipedia for this. Try rephrasing with more detail, or check a reliable source directly.';
   }
 
   addStaticBody(wrapper, answer);
@@ -1616,10 +1603,10 @@ async function runSearch(wrapper, turn, query, prompt) {
   const box = addToolBox(wrapper, 'Searching the web', query);
   const r = await research(query, box);
   const log = r.tried.join('; ') || 'none';
-  const summary = r.items.length ? `${r.items.length} sources read` : 'no matching sources';
-  box.setResult(`${r.evidence || 'No matching sources were found.'}\n\nSearch log: ${log}`, summary);
+  const summary = r.items.length ? `${r.items.length} relevant source${r.items.length > 1 ? 's' : ''}` : 'no relevant sources';
+  box.setResult(`${r.evidence || 'No relevant sources were found.'}\n\nSearch log: ${log}`, summary);
   if (stopRequested) { turn.text = '*Stopped.*'; return; }
-  await answerWithEvidence(wrapper, turn, prompt, r.items, r.evidence);
+  await answerWithEvidence(wrapper, turn, prompt, r.items, r.evidence, r.terms);
 }
 
 async function chatTurn(wrapper, turn, text, prompt) {
@@ -1656,7 +1643,7 @@ async function chatTurn(wrapper, turn, text, prompt) {
     const box = addToolBox(wrapper, label, call.args[key]);
     const ev = await runTool(call, s => box.setTitle(s));
     box.setResult(ev, 'done');
-    await answerWithEvidence(wrapper, turn, prompt, [], ev);
+    await answerWithEvidence(wrapper, turn, prompt, [], ev, []);
   } else {
     await runSearch(wrapper, turn, text, prompt);
   }
@@ -1697,12 +1684,14 @@ async function sendMessage() {
       const box = addToolBox(wrapper, 'Checking the time', text);
       const ans = timeAnswer(tq);
       box.setResult(ans, 'done');
+      addStaticBody(wrapper, ans);
       turn.text = ans;
     } else if (math) {
       const box = addToolBox(wrapper, 'Calculating', math.label);
       const value = evaluate(math.expr);
       const ans = value === null ? `I could not work out "${math.label}".` : `${math.label} = **${fmtNum(value)}**`;
       box.setResult(ans, 'done');
+      addStaticBody(wrapper, ans);
       turn.text = ans;
     } else if (canTool && shouldSearch(text)) {
       await runSearch(wrapper, turn, text, prompt);
